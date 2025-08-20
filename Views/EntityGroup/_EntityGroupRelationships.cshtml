@@ -1,0 +1,194 @@
+﻿@model EntityGroupSearchModel
+
+@using Nop.Plugin.Shipping.Manager.Models
+
+@{
+    var stores = await storeService.GetAllStoresAsync();
+
+    const string hideSearchBlockAttributeName = "EntityGroupsPage.HideSearchBlock";
+    var hideSearchBlock = await genericAttributeService.GetAttributeAsync<bool>(await workContext.GetCurrentCustomerAsync(), hideSearchBlockAttributeName);
+}
+
+<form asp-controller="EntityGroup" asp-action="EntityGroup" method="post" id="entity-group-form">
+    <div class="cards-group advanced-setting">
+        <div class="form-horizontal">
+            <div class="card card-default card-search">
+                <div class="card-body">
+                    <div class="row search-row @(!hideSearchBlock ? "opened" : "")" data-hideAttribute="@hideSearchBlockAttributeName">
+                        <div class="search-text">@T("Admin.Common.Search")</div>
+                        <div class="icon-search"><i class="fa fa-search" aria-hidden="true"></i></div>
+                        <div class="icon-collapse"><i class="fa fa-angle-down" aria-hidden="true"></i></div>
+                    </div>
+                    <div class="search-body @(hideSearchBlock ? "closed" : "")">
+                        <div class="row">
+                            <div class="col-md-5">
+                                <div class="form-group row" @(Model.AvailableStores.SelectionIsNotPossible() ? Html.Raw("style=\"display:none\"") : null)>
+                                    <div class="col-md-4">
+                                        <nop-label asp-for="SearchStoreId" />
+                                    </div>
+                                    <div class="col-md-8">
+                                        <nop-select asp-for="SearchStoreId" asp-items="Model.AvailableStores" />
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-md-4">
+                                        <nop-label asp-for="SearchVendorId" />
+                                    </div>
+                                    <div class="col-md-8">
+                                        <nop-select asp-for="SearchVendorId" asp-items="Model.AvailableVendors" />
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-md-4">
+                                        <nop-label asp-for="SearchWarehouseId" />
+                                    </div>
+                                    <div class="col-md-8">
+                                        <nop-select asp-for="SearchWarehouseId" asp-items="Model.AvailableWarehouses" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-7">
+                                <div class="form-group row">
+                                    <div class="col-sm-4">
+                                        <nop-label asp-for="SearchKeyGroupId" />
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <nop-select asp-for="SearchKeyGroupId" asp-items="Model.KeyGroupList" />
+                                        <span asp-validation-for="SearchKeyGroupId"></span>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-sm-4">
+                                        <nop-label asp-for="SearchKeyId" />
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <nop-select asp-for="SearchKeyId" asp-items="Model.KeyList" />
+                                        <span asp-validation-for="SearchKeyId"></span>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-md-4">
+                                        <nop-label asp-for="SearchEntityId" />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <nop-select asp-for="SearchEntityId" asp-items="Model.AvailableEntity" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="text-center col-12">
+                                <button type="button" id="search-entity-group-records" class="btn btn-primary btn-search">
+                                    <i class="fas fa-search"></i>
+                                    @T("Admin.Common.Search")
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card card-default">
+                <div class="card-body">
+                    <p>
+                        <b>@T("Plugins.Shipping.Manager.EntityGroup.Instruction")</b>
+                        @T("Plugins.Shipping.Manager.EntityGroup.Instruction.Hint   ")
+                    </p>
+                    @await Html.PartialAsync("Table", new DataTablesModel
+                    {
+                    Name = "entity-group-grid",
+                    UrlRead = new DataUrl("EntityGroupList", "EntityGroup", null),
+                    UrlDelete = new DataUrl("DeleteEntityGroup", "EntityGroup", null),
+                    SearchButtonId = "search-entity-group-records",
+                    Length = Model.PageSize,
+                    LengthMenu = Model.AvailablePageSizes,
+                    Filters = new List<FilterParameter>
+                    {
+                        new FilterParameter(nameof(Model.SearchStoreId)),
+                        new FilterParameter(nameof(Model.SearchWarehouseId)),
+                        new FilterParameter(nameof(Model.SearchVendorId)),
+                        new FilterParameter(nameof(Model.SearchEntityId)),
+                        new FilterParameter(nameof(Model.SearchKeyGroupId)),
+                        new FilterParameter(nameof(Model.SearchKeyId)),
+                    },
+                    ColumnCollection = new List<ColumnProperty>
+                    {
+                        new ColumnProperty(nameof(EntityGroupModel.KeyGroup))
+                        {
+                            Title = T("Plugins.Shipping.Manager.Fields.KeyGroup").Text,
+                            Width = "200"
+                        },
+                        new ColumnProperty(nameof(EntityGroupModel.EntityName))
+                        {
+                            Title = T("Plugins.Shipping.Manager.Fields.Entity").Text,
+                            Width = "200"
+                        },
+                        new ColumnProperty(nameof(EntityGroupModel.Key))
+                        {
+                            Title = T("Plugins.Shipping.Manager.Fields.Key").Text,
+                            Width = "200"
+                        },
+                        new ColumnProperty(nameof(EntityGroupModel.Value))
+                        {
+                            Title = T("Plugins.Shipping.Manager.Fields.Value").Text,
+                            ClassName =  NopColumnClassDefaults.CenterAll,
+                            Width = "100",
+                        },
+                        new ColumnProperty(nameof(EntityGroupModel.StoreName))
+                        {
+                            Title = T("Plugins.Shipping.Manager.Fields.Store").Text,
+                            Width = "200",
+                            Visible = stores.Count > 1
+                        },
+                        new ColumnProperty(nameof(EntityGroupModel.VendorName))
+                        {
+                            Title = T("Admin.Catalog.Products.Fields.Vendor").Text,
+                            Width = "200"
+                        },
+                        new ColumnProperty(nameof(EntityGroupModel.WarehouseName))
+                        {
+                            Title = T("Plugins.Shipping.Manager.Fields.Warehouse").Text,
+                            Width = "200"
+                        },
+                        new ColumnProperty(nameof(EntityGroupModel.Id))
+                        {
+                            Title = T("Admin.Common.Edit").Text,
+                            ClassName = NopColumnClassDefaults.Button,
+                            Width = "100",
+                            Render = new RenderCustom("renderColumnEdit")
+                        },
+                        new ColumnProperty(nameof(EntityGroupModel.Id))
+                        {
+                            Title = T("Admin.Common.Delete").Text,
+                            ClassName = NopColumnClassDefaults.Button,
+                            Render = new RenderButtonRemove(T("Admin.Common.Delete").Text),
+                            Width = "100"
+                        }
+                    }
+                })
+                </div>
+                <div class="card-footer">
+                    <button type="submit" id="btnAddNewRecord" class="btn btn-primary"
+                            onclick="javascript:OpenWindow('@(Url.Action("AddEntityGroupPopup", "EntityGroup", new {btnId = "btnRefresh", formId = "entity-group-form"}))', 600, 600, true);return false;">
+                        @T("Plugins.Shipping.Manager.AddRecord")
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        function renderColumnEdit(data, type, row, meta) {
+            return '<button onclick=\"javascript:OpenWindow(\'@Url.Action("EditEntityGroupPopup", "EntityGroup")?id='
+                + data + '&btnId=btnRefresh&formId=entity-group-form\', 600, 600, true); return false;\" class="btn btn-default"><i class="fa fa-pencil"></i>@T("Admin.Common.Edit")</button>';
+        }
+        $(document)
+            .ready(function () {
+                $('#btnRefresh')
+                    .click(function () {
+                        //refresh grid
+                        updateTable('#entity-group-grid');
+                        //return false to don't reload a page
+                        return false;
+                    });
+            });
+    </script>
+</form>

@@ -1,0 +1,105 @@
+@model WarehouseSearchModel
+
+@{
+    Layout = "_AdminLayout";
+
+    //page title
+    ViewBag.Title = T("Plugins.Shipping.Manager.Warehouses").Text;
+    //active menu item (system name)
+    NopHtml.SetActiveMenuItemSystemName("Nop.Plugins.Shipping.Manager.Warehouses");
+
+    bool vendorVisible = Model.VendorId == 0;
+}
+
+<nop-antiforgery-token />
+<div class="content-header clearfix">
+    <h1 class="float-left">
+        @T("Plugins.Shipping.Manager.Warehouses")
+    </h1>
+    <div class="float-right">
+        <a asp-action="CreateWarehouse" class="btn btn-primary">
+            <i class="fa fa-plus-square"></i>
+            @T("Admin.Common.AddNew")
+        </a>
+        @await Component.InvokeAsync("AdminWidget", new { widgetZone = AdminWidgetZones.WarehouseListButtons })
+    </div>
+</div>
+
+<div class="content">
+    <div class="form-horizontal">
+        @await Component.InvokeAsync("VendorScopeConfiguration")
+        <div class="cards-group">
+            <div class="card card-default">
+                <div class="card-body">
+                    <div class="form-group row">
+                        <div class="col-md-2">
+                            <nop-label asp-for="SearchName" />
+                        </div>
+                        <div class="col-md-3">
+                            <nop-editor asp-for="SearchName" value="@Model.SearchName" />
+                        </div>
+                        <div class="col-md-2">
+                            <button type="button" id="Search-Name" class="btn btn-primary btn-search" style="margin-top:0px;">
+                                <i class="fa fa-search"></i>
+                                @T("Admin.Common.Search")
+                            </button>
+                        </div>
+                    </div>
+                    @await Html.PartialAsync("Table", new DataTablesModel
+                    {
+                        Name = "warehouse-grid",
+                        UrlRead = new DataUrl("Warehouses", "ShippingOperations", null),
+                        SearchButtonId = "Search-Name",
+                        Length = Model.PageSize,
+                        LengthMenu = Model.AvailablePageSizes,
+                        Filters = new List<FilterParameter>
+                        {
+                            new FilterParameter(nameof(Model.SearchName)),
+                        },
+                        ColumnCollection = new List<ColumnProperty>
+                        {
+                            new ColumnProperty(nameof(WarehouseModel.Name))
+                            {
+                                Title = T("Admin.Configuration.Shipping.Warehouses.Fields.Name").Text,
+                                Width = "200"
+                            },
+                            new ColumnProperty(nameof(WarehouseModel.VendorName))
+                            {
+                                Title = T("Plugins.Shipping.Manager.Fields.Vendor").Text,
+                                Width = "300",
+                                Visible = vendorVisible
+                            },
+                            new ColumnProperty(nameof(WarehouseModel.Address.StateProvinceName))
+                            {
+                                Title = T("Admin.Address.Fields.StateProvince").Text,
+                                Width = "200"
+                            },
+                            new ColumnProperty(nameof(WarehouseModel.Address.County))
+                            {
+                                Title = T("Admin.Address.Fields.County").Text,
+                                Width = "200"
+                            },
+                            new ColumnProperty(nameof(WarehouseModel.Address.City))
+                            {
+                                Title = T("Admin.Address.Fields.City").Text,
+                                Width = "150"
+                            },
+                            new ColumnProperty(nameof(WarehouseModel.Address.PhoneNumber))
+                            {
+                                Title = T("Admin.Address.Fields.PhoneNumber").Text,
+                                Width = "120"
+                            },
+                            new ColumnProperty(nameof(WarehouseModel.Id))
+                            {
+                                Title = T("Admin.Common.Edit").Text,
+                                Width = "100",
+                                ClassName =  NopColumnClassDefaults.Button,
+                                Render = new RenderButtonEdit(new DataUrl("EditWarehouse"))
+                            }
+                        }
+                    })
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

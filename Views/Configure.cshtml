@@ -1,0 +1,616 @@
+﻿@model Nop.Plugin.Shipping.Manager.Models.ConfigurationModel
+
+@using Nop.Core;
+@using Nop.Plugin.Shipping.Manager;
+@using Nop.Plugin.Shipping.Manager.Settings;
+
+@{
+    Layout = "_AdminLayout";
+
+    //page title
+    ViewBag.Title = T("Plugins.Shipping.Manager.Configuration").Text;
+    //active menu item (system name)
+    NopHtml.SetActiveMenuItemSystemName("Nop.Plugin.Shipping.Manager.Configure");
+
+    var iWebHelper = Nop.Core.Infrastructure.EngineContext.Current.Resolve<IWebHelper>();
+    var shippingManagerSettings = Nop.Core.Infrastructure.EngineContext.Current.Resolve<ShippingManagerSettings>();
+}
+
+<div class="content-header clearfix">
+    <h1 class="float-left">
+        @T("Plugins.Shipping.Manager.Configuration") -  @T("Plugins.Shipping.Manager.Menu")
+    </h1>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="form-horizontal">
+            @await Component.InvokeAsync("StoreScopeConfiguration")
+            <div class="card card-default">
+                <div class="card-body">
+                    <form asp-controller="ShippingManagerConfiguration" asp-action="Configure" method="post">
+                        <nop-tabs id="shipping-manager-configure">
+                            <nop-tab asp-name="shipping-manager-settings" asp-title="@T("Plugins.Shipping.Manager.Operation.Setup")" asp-default="true">
+                                <div class="content-header clearfix">
+                                    <b>@T("Plugins.Shipping.Manager.Configure.Note.Restart")</b>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-md-3">
+                                        <nop-override-store-checkbox asp-for="Enabled_OverrideForStore" asp-input="Enabled" asp-store-scope="@Model.ActiveStoreScopeConfiguration" />
+                                        <nop-label asp-for="Enabled" />
+                                    </div>
+                                    <div class="col-md-9">
+                                        <nop-editor asp-for="Enabled" />
+                                        <span asp-validation-for="Enabled"></span>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-md-3">
+                                        <nop-override-store-checkbox asp-for="ProcessingMode_OverrideForStore"
+                                                                     asp-input="ProcessingModeId" asp-store-scope="@Model.ActiveStoreScopeConfiguration" />
+                                        <nop-label asp-for="ProcessingModeId" />
+                                    </div>
+                                    <div class="col-md-3">
+                                        <nop-select asp-for="ProcessingModeId" asp-items="Model.ProcessingModeValues" />
+                                        <span asp-validation-for="ProcessingModeId"></span>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-md-3">
+                                        <nop-override-store-checkbox asp-for="InternationalOperationsEnabled_OverrideForStore" asp-input="InternationalOperationsEnabled" asp-store-scope="@Model.ActiveStoreScopeConfiguration" />
+                                        <nop-label asp-for="InternationalOperationsEnabled" />
+                                    </div>
+                                    <div class="col-md-9">
+                                        <nop-editor asp-for="InternationalOperationsEnabled" />
+                                        <span asp-validation-for="InternationalOperationsEnabled"></span>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-md-3">
+                                        <nop-override-store-checkbox asp-for="OrderByDate_OverrideForStore" asp-input="OrderByDate" asp-store-scope="@Model.ActiveStoreScopeConfiguration" />
+                                        <nop-label asp-for="OrderByDate" />
+                                    </div>
+                                    <div class="col-md-9">
+                                        <nop-editor asp-for="OrderByDate" />
+                                        <span asp-validation-for="OrderByDate"></span>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-md-3">
+                                        <nop-override-store-checkbox asp-for="EncryptServicePointPost_OverrideForStore"
+                                                                     asp-input="EncryptServicePointPost" asp-store-scope="@Model.ActiveStoreScopeConfiguration" />
+                                        <nop-label asp-for="EncryptServicePointPost" />
+                                    </div>
+                                    <div class="col-md-9">
+                                        <nop-editor asp-for="EncryptServicePointPost" />
+                                        <span asp-validation-for="EncryptServicePointPost"></span>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-md-3">
+                                        <nop-override-store-checkbox asp-for="SetAsShippedWhenAnnounced_OverrideForStore"
+                                                                     asp-input="SetAsShippedWhenAnnounced" asp-store-scope="@Model.ActiveStoreScopeConfiguration" />
+                                        <nop-label asp-for="SetAsShippedWhenAnnounced" />
+                                    </div>
+                                    <div class="col-md-9">
+                                        <nop-editor asp-for="SetAsShippedWhenAnnounced" />
+                                        <span asp-validation-for="SetAsShippedWhenAnnounced"></span>
+                                    </div>
+                                </div>
+                                								<div class="form-group row">
+									<div class="col-md-3">
+										<nop-override-store-checkbox asp-for="DisplayManualOperations_OverrideForStore"
+																	 asp-input="DisplayManualOperations" asp-store-scope="@Model.ActiveStoreScopeConfiguration" />
+										<nop-label asp-for="DisplayManualOperations" />
+									</div>
+									<div class="col-md-9">
+										<nop-editor asp-for="DisplayManualOperations" />
+										<span asp-validation-for="DisplayManualOperations"></span>
+									</div>
+								</div>
+                                <div class="form-group row">
+                                    <div class="col-md-3">
+                                        <nop-override-store-checkbox asp-for="ShippingOptionDisplay_OverrideForStore"
+                                                                     asp-input="ShippingOptionDisplayId" asp-store-scope="@Model.ActiveStoreScopeConfiguration" />
+                                        <nop-label asp-for="ShippingOptionDisplayValues" />
+                                    </div>
+                                    <div class="col-md-3">
+                                        <nop-select asp-for="ShippingOptionDisplayId" asp-items="Model.ShippingOptionDisplayValues" />
+                                        <span asp-validation-for="ShippingOptionDisplayId"></span>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-md-3">
+                                        <nop-override-store-checkbox asp-for="CheckoutOperationMode_OverrideForStore"
+                                                                     asp-input="CheckoutOperationModeId" asp-store-scope="@Model.ActiveStoreScopeConfiguration" />
+                                        <nop-label asp-for="CheckoutOperationModeValues" />
+                                    </div>
+                                    <div class="col-md-3">
+                                        <nop-select asp-for="CheckoutOperationModeId" asp-items="Model.CheckoutOperationModeValues" />
+                                        <span asp-validation-for="CheckoutOperationModeId"></span>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-md-3">
+                                        &nbsp;
+                                    </div>
+                                    <div class="col-md-3">
+                                        <input type="submit" name="save" class="btn btn-primary" value="@T("Admin.Common.Save")" />
+                                    </div>
+                                </div>
+                            </nop-tab>
+							<nop-tab asp-name="shipping-configure-settings" asp-title="@T("Plugins.Shipping.Manager.Configure.Setup")" asp-default="false">
+								<div class="form-group row">
+									<div class="col-md-3">
+										<nop-override-store-checkbox asp-for="UsePackagingSystem_OverrideForStore" asp-input="UsePackagingSystem" asp-store-scope="@Model.ActiveStoreScopeConfiguration" />
+										<nop-label asp-for="UsePackagingSystem" />
+									</div>
+									<div class="col-md-9">
+										<nop-editor asp-for="UsePackagingSystem" />
+										<span asp-validation-for="UsePackagingSystem"></span>
+									</div>
+								</div>
+								<div class="form-group row">
+									<div class="col-md-3">
+										<nop-override-store-checkbox asp-for="PackagingOptions_OverrideForStore" asp-input="PackagingOptions" asp-store-scope="@Model.ActiveStoreScopeConfiguration" />
+										<nop-label asp-for="PackagingOptions" />
+									</div>
+									<div class="col-md-9">
+										<nop-editor asp-for="PackagingOptions" />
+										<span asp-validation-for="PackagingOptions"></span>
+									</div>
+								</div>
+								<div class="form-group row">
+									<div class="col-md-3">
+										<nop-label asp-for="ApiServices" />
+                                    </div>
+                                    <div class="col-md-9">
+                                        <nop-select asp-for="ApiServicesIds" asp-items="Model.AvailableApiServices" asp-multiple="true" />
+                                        <span asp-validation-for="ApiServicesIds"></span>
+                                    </div>
+                                    <script>
+                                        $(document).ready(function () {
+                                            var serviceIdsInput = $('#@Html.IdFor(model => model.ApiServicesIds)').data("kendoMultiSelect");
+                                            serviceIdsInput.setOptions({
+                                                autoClose: false,
+                                                filter: "contains"
+                                            });
+                                        @if (Model.AvailableApiServices.Count == 0)
+                                        {
+                                            <text>
+                                                    serviceIdsInput.setOptions({
+                                                        enable: false,
+                                                        placeholder: '@T("Plugins.Shipping.Manager.Configure.ApiServiceIds.NoAvailableApiServices")'
+                                                    });
+                                                serviceIdsInput._placeholder();
+                                                serviceIdsInput._enable();
+                                            </text>
+                                        }
+                                                                    });
+                                    </script>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-md-3">
+                                        <nop-label asp-for="DeleteTablesonUninstall" />
+                                    </div>
+                                    <div class="col-md-9">
+                                        <nop-editor asp-for="DeleteTablesonUninstall" />
+                                        <span asp-validation-for="DeleteTablesonUninstall"></span>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-md-3">
+                                        <nop-label asp-for="DeleteConfigurationDataonUninstall" />
+                                    </div>
+                                    <div class="col-md-9">
+                                        <nop-editor asp-for="DeleteConfigurationDataonUninstall" />
+                                        <span asp-validation-for="DeleteConfigurationDataonUninstall"></span>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-md-3">
+                                        <nop-override-store-checkbox asp-for="TestMode" asp-input="TestMode" />
+                                        <nop-label asp-for="TestMode" />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <nop-editor asp-for="TestMode" />
+                                        <span asp-validation-for="TestMode"></span>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-md-3">
+                                        <nop-label asp-for="PublicKey" />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <nop-editor asp-for="PublicKey" />
+                                        <span asp-validation-for="PublicKey"></span>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-md-3">
+                                        &nbsp;
+                                    </div>
+                                    <div class="col-md-3">
+                                        <input type="submit" name="save" class="btn btn-primary" value="@T("Admin.Common.Save")" />
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-md-9 col-md-offset-3">
+                                        <input type="submit" name="generate" class="btn bg-primary" value="@T("Plugins.Shipping.Manager.Generate.LanguagePack")" />
+                                    </div>
+                                </div>
+                            </nop-tab>
+                            @if (shippingManagerSettings.ApiServices.Contains(ShippingManagerDefaults.SendCloudSystemName))
+                            {
+                                <nop-tab asp-name="sendcloud-settings" asp-title="@T("Plugins.Shipping.Manager.Configure.Sendcloud")" asp-default="false">
+                                    <div class="form-group row">
+                                        <b>@T("Plugins.Shipping.Manager.Configure.SendCloud.Instructions")</b>
+                                    </div>
+                                    <div class="form-group row">
+                                        <div class="col-md-3">
+                                            <nop-override-store-checkbox asp-for="SendcloudApiSettings.AuthenticationURL_OverrideForStore"
+                                                                         asp-input="SendcloudApiSettings.AuthenticationURL" asp-store-scope="@Model.SendcloudApiSettings.ActiveStoreScopeConfiguration" />
+                                            <nop-label asp-for="SendcloudApiSettings.AuthenticationURL" />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <nop-editor asp-for="SendcloudApiSettings.AuthenticationURL" />
+                                            <span asp-validation-for="SendcloudApiSettings.AuthenticationURL"></span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <div class="col-md-3">
+                                            <nop-override-store-checkbox asp-for="SendcloudApiSettings.HostURL_OverrideForStore"
+                                                                         asp-input="SendcloudApiSettings.HostURL" asp-store-scope="@Model.SendcloudApiSettings.ActiveStoreScopeConfiguration" />
+                                            <nop-label asp-for="SendcloudApiSettings.HostURL" />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <nop-editor asp-for="SendcloudApiSettings.HostURL" />
+                                            <span asp-validation-for="SendcloudApiSettings.HostURL"></span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <div class="col-md-3">
+                                            <nop-override-store-checkbox asp-for="SendcloudApiSettings.ApiKey_OverrideForStore"
+                                                                         asp-input="SendcloudApiSettings.ApiKey" asp-store-scope="@Model.SendcloudApiSettings.ActiveStoreScopeConfiguration" />
+                                            <nop-label asp-for="SendcloudApiSettings.ApiKey" />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <nop-editor asp-for="SendcloudApiSettings.ApiKey" />
+                                            <span asp-validation-for="SendcloudApiSettings.ApiKey"></span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <div class="col-md-3">
+                                            <nop-override-store-checkbox asp-for="SendcloudApiSettings.ApiSecret_OverrideForStore"
+                                                                         asp-input="SendcloudApiSettings.ApiSecret" asp-store-scope="@Model.SendcloudApiSettings.ActiveStoreScopeConfiguration" />
+                                            <nop-label asp-for="SendcloudApiSettings.ApiSecret" />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <nop-editor asp-for="SendcloudApiSettings.ApiSecret" />
+                                            <span asp-validation-for="SendcloudApiSettings.ApiSecret"></span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <div class="col-md-3">
+                                            <nop-override-store-checkbox asp-for="SendcloudApiSettings.TestMode" asp-input="SendcloudApiSettings.TestMode" />
+                                            <nop-label asp-for="SendcloudApiSettings.TestMode" />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <nop-editor asp-for="SendcloudApiSettings.TestMode" />
+                                            <span asp-validation-for="SendcloudApiSettings.TestMode"></span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <div class="col-md-3">
+                                            &nbsp;
+                                        </div>
+                                        <div class="col-md-9">
+                                            <input type="submit" name="saveSendCloudConfiguration" class="btn btn-primary" value="@T("Admin.Common.Save")" />
+                                            <input type="submit" name="loadSendCloudCarriers" class="btn bg-green" value="@T("Plugins.Shipping.Manager.Configure.Sendcloud.LoadCarriers")" />
+                                            <input type="submit" name="loadSendCloudConfiguration" class="btn bg-green" value="@T("Plugins.Shipping.Manager.Configure.Sendcloud.LoadConfiguration")" />
+                                            <input type="submit" name="validateSendCloudConfiguration" class="btn bg-purple" value="@T("Plugins.Shipping.Manager.Configure.Sendcloud.ValidateConfiguration")" />
+                                        </div>
+                                    </div>
+                                </nop-tab>
+                            }
+                            @if (shippingManagerSettings.ApiServices.Contains(ShippingManagerDefaults.AramexSystemName))
+                            {
+                                <nop-tab asp-name="aramex-settings" asp-title="@T("Plugins.Shipping.Manager.Configure.Aramex")" asp-default="false">
+                                    <div class="form-group row">
+                                        <b>@T("Plugins.Shipping.Manager.Configure.Aramex.Instructions")</b>
+                                    </div>
+                                    <div class="form-group row">
+                                        <div class="col-md-3">
+                                            <nop-override-store-checkbox asp-for="AramexApiSettings.AuthenticationURL_OverrideForStore"
+                                                                         asp-input="AramexApiSettings.AuthenticationURL" asp-store-scope="@Model.AramexApiSettings.ActiveStoreScopeConfiguration" />
+                                            <nop-label asp-for="AramexApiSettings.AuthenticationURL" />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <nop-editor asp-for="AramexApiSettings.AuthenticationURL" />
+                                            <span asp-validation-for="AramexApiSettings.AuthenticationURL"></span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <div class="col-md-3">
+                                            <nop-override-store-checkbox asp-for="AramexApiSettings.HostURL_OverrideForStore"
+                                                                         asp-input="AramexApiSettings.HostURL" asp-store-scope="@Model.AramexApiSettings.ActiveStoreScopeConfiguration" />
+                                            <nop-label asp-for="AramexApiSettings.HostURL" />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <nop-editor asp-for="AramexApiSettings.HostURL" />
+                                            <span asp-validation-for="AramexApiSettings.HostURL"></span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <div class="col-md-3">
+                                            <nop-override-store-checkbox asp-for="AramexApiSettings.ApiKey_OverrideForStore"
+                                                                         asp-input="AramexApiSettings.ApiKey" asp-store-scope="@Model.AramexApiSettings.ActiveStoreScopeConfiguration" />
+                                            <nop-label asp-for="AramexApiSettings.ApiKey" />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <nop-editor asp-for="AramexApiSettings.ApiKey" />
+                                            <span asp-validation-for="AramexApiSettings.ApiKey"></span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <div class="col-md-3">
+                                            <nop-override-store-checkbox asp-for="AramexApiSettings.ApiSecret_OverrideForStore"
+                                                                         asp-input="AramexApiSettings.ApiSecret" asp-store-scope="@Model.AramexApiSettings.ActiveStoreScopeConfiguration" />
+                                            <nop-label asp-for="AramexApiSettings.ApiSecret" />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <nop-editor asp-for="AramexApiSettings.ApiSecret" />
+                                            <span asp-validation-for="AramexApiSettings.ApiSecret"></span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <div class="col-md-3">
+                                            <nop-override-store-checkbox asp-for="AramexApiSettings.TestMode" asp-input="AramexApiSettings.TestMode" />
+                                            <nop-label asp-for="AramexApiSettings.TestMode" />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <nop-editor asp-for="AramexApiSettings.TestMode" />
+                                            <span asp-validation-for="AramexApiSettings.TestMode"></span>
+                                        </div>
+                                    </div>
+                                    @if (Model.AramexApiSettings.WarehouseSetup.Count() > 0 && shippingManagerSettings.UseWarehousesConfiguration)
+                                    {
+                                        <div class="card-body">
+                                            <div class="card-heading">
+                                                <strong>@T("Plugins.Shipping.Manager.Configure.WebserviceWarehouseSettings")</strong>
+                                            </div>
+                                            <br />
+                                            @for (var item = 0; item < Model.AramexApiSettings.WarehouseSetup.Count; item++)
+                                            {
+                                                @Html.HiddenFor(model => Model.AramexApiSettings.WarehouseSetup[item].WarehouseId)
+                                                <div class="form-group row">
+                                                    <div class="col-md-3">
+                                                        <nop-label asp-for="@Model.AramexApiSettings.WarehouseSetup[item].Name" />
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <div class="col-form-label">
+                                                            <b>@Model.AramexApiSettings.WarehouseSetup[item].Name</b>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group row">
+                                                    <div class="col-md-3">
+                                                        <nop-label asp-for="@Model.AramexApiSettings.WarehouseSetup[item].ApiKey" />
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <input class="form-control text-box single-line valid" asp-for="@Model.AramexApiSettings.WarehouseSetup[item].ApiKey" />
+                                                        <span asp-validation-for="@Model.AramexApiSettings.WarehouseSetup[item].ApiKey"></span>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group row">
+                                                    <div class="col-md-3">
+                                                        <nop-label asp-for="@Model.AramexApiSettings.WarehouseSetup[item].ApiSecret" />
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <input class="form-control text-box single-line valid" asp-for="@Model.AramexApiSettings.WarehouseSetup[item].ApiSecret" />
+                                                        <span asp-validation-for="@Model.AramexApiSettings.WarehouseSetup[item].ApiSecret"></span>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group row">
+                                                    <div class="col-md-3">
+                                                        <nop-label asp-for="@Model.AramexApiSettings.WarehouseSetup[item].APITestResult" />
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <input class="form-control text-box single-line valid" asp-for="@Model.AramexApiSettings.WarehouseSetup[item].APITestResult" asp-disabled="true" />
+                                                        <span asp-validation-for="@Model.AramexApiSettings.WarehouseSetup[item].APITestResult"></span>
+                                                    </div>
+                                                </div>
+                                            }
+                                        </div>
+                                    }
+                                    <div class="form-group row">
+                                        <div class="col-md-3">
+                                            &nbsp;
+                                        </div>
+                                        <div class="col-md-9">
+                                            <input type="submit" name="saveAramexConfiguration" class="btn btn-primary" value="@T("Admin.Common.Save")" />
+                                            <input type="submit" name="loadAramexConfiguration" class="btn bg-green" value="@T("Plugins.Shipping.Manager.Configure.Aramex.LoadConfiguration")" />
+                                            <input type="submit" name="testAramexConfiguration" class="btn bg-success" value="@T("Plugins.Shipping.Manager.Configure.Aramex.Test")" />
+                                        </div>
+                                    </div>
+
+                                </nop-tab>
+                            }
+                            @if (shippingManagerSettings.ApiServices.Contains(ShippingManagerDefaults.CanadaPostSystemName))
+                            {
+                                <nop-tab asp-name="canadapost-settings" asp-title="@T("Plugins.Shipping.Manager.Configure.CanadaPost")" asp-default="false">
+                                    <div class="content-header clearfix">
+                                        <div class="float-left">
+                                            <b>@T("Plugins.Shipping.Manager.Configure.CanadaPost.Instructions")</b>
+                                        </div>
+                                        <div class="float-right">
+                                            <a asp-controller="ShippingOperations" asp-action="Methods" class="btn btn-primary">
+                                                <i class="fas fa-truck"></i>
+                                                @T("Admin.Configuration.Shipping.Methods.Manage")
+                                            </a>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <div class="col-md-3">
+                                            <nop-override-store-checkbox asp-for="CanadaPostApiSettings.AuthenticationURL_OverrideForStore"
+                                                                         asp-input="CanadaPostApiSettings.AuthenticationURL" asp-store-scope="@Model.CanadaPostApiSettings.ActiveStoreScopeConfiguration" />
+                                            <nop-label asp-for="CanadaPostApiSettings.AuthenticationURL" />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <nop-editor asp-for="CanadaPostApiSettings.AuthenticationURL" />
+                                            <span asp-validation-for="CanadaPostApiSettings.AuthenticationURL"></span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <div class="col-md-3">
+                                            <nop-override-store-checkbox asp-for="CanadaPostApiSettings.Username_OverrideForStore"
+                                                                         asp-input="CanadaPostApiSettings.Username" asp-store-scope="@Model.CanadaPostApiSettings.ActiveStoreScopeConfiguration" />
+                                            <nop-label asp-for="CanadaPostApiSettings.Username" />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <nop-editor asp-for="CanadaPostApiSettings.Username" />
+                                            <span asp-validation-for="CanadaPostApiSettings.Username"></span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <div class="col-md-3">
+                                            <nop-override-store-checkbox asp-for="CanadaPostApiSettings.Password_OverrideForStore"
+                                                                         asp-input="CanadaPostApiSettings.Password" asp-store-scope="@Model.CanadaPostApiSettings.ActiveStoreScopeConfiguration" />
+                                            <nop-label asp-for="CanadaPostApiSettings.Password" />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <nop-editor asp-for="CanadaPostApiSettings.Password" />
+                                            <span asp-validation-for="CanadaPostApiSettings.Password"></span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <div class="col-md-3">
+                                            <nop-override-store-checkbox asp-for="CanadaPostApiSettings.CustomerNumber_OverrideForStore"
+                                                                         asp-input="CanadaPostApiSettings.CustomerNumber" asp-store-scope="@Model.CanadaPostApiSettings.ActiveStoreScopeConfiguration" />
+                                            <nop-label asp-for="CanadaPostApiSettings.CustomerNumber" />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <nop-editor asp-for="CanadaPostApiSettings.CustomerNumber" />
+                                            <span asp-validation-for="CanadaPostApiSettings.CustomerNumber"></span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <div class="col-md-3">
+                                            <nop-override-store-checkbox asp-for="CanadaPostApiSettings.MoBoCN_OverrideForStore"
+                                                                         asp-input="CanadaPostApiSettings.MoBoCN" asp-store-scope="@Model.CanadaPostApiSettings.ActiveStoreScopeConfiguration" />
+                                            <nop-label asp-for="CanadaPostApiSettings.MoBoCN" />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <nop-editor asp-for="CanadaPostApiSettings.MoBoCN" />
+                                            <span asp-validation-for="CanadaPostApiSettings.MoBoCN"></span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <div class="col-md-3">
+                                            <nop-override-store-checkbox asp-for="CanadaPostApiSettings.ContractId_OverrideForStore"
+                                                                         asp-input="CanadaPostApiSettings.ContractId" asp-store-scope="@Model.CanadaPostApiSettings.ActiveStoreScopeConfiguration" />
+                                            <nop-label asp-for="CanadaPostApiSettings.ContractId" />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <nop-editor asp-for="CanadaPostApiSettings.ContractId" />
+                                            <span asp-validation-for="CanadaPostApiSettings.ContractId"></span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <div class="col-md-3">
+                                            <nop-override-store-checkbox asp-for="CanadaPostApiSettings.ShipmentOptions_OverrideForStore"
+                                                                         asp-input="CanadaPostApiSettings.ShipmentOptions" asp-store-scope="@Model.CanadaPostApiSettings.ActiveStoreScopeConfiguration" />
+                                            <nop-label asp-for="CanadaPostApiSettings.ShipmentOptions" />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <nop-editor asp-for="CanadaPostApiSettings.ShipmentOptions" />
+                                            <span asp-validation-for="CanadaPostApiSettings.ShipmentOptions"></span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <div class="col-md-3">
+                                            <nop-override-store-checkbox asp-for="CanadaPostApiSettings.TestMode" asp-input="CanadaPostApiSettings.TestMode" />
+                                            <nop-label asp-for="CanadaPostApiSettings.TestMode" />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <nop-editor asp-for="CanadaPostApiSettings.TestMode" />
+                                            <span asp-validation-for="CanadaPostApiSettings.TestMode"></span>
+                                        </div>
+                                    </div>
+                                    @if (Model.CanadaPostApiSettings.WarehouseSetup.Count() > 0 && shippingManagerSettings.UseWarehousesConfiguration)
+                                    {
+                                        <div class="card-body">
+                                            <div class="card-heading">
+                                                <strong>@T("Plugins.Shipping.Manager.Configure.WebserviceWarehouseSettings")</strong>
+                                            </div>
+                                            <br />
+                                            @for (var item = 0; item < Model.CanadaPostApiSettings.WarehouseSetup.Count; item++)
+                                            {
+                                                @Html.HiddenFor(model => Model.CanadaPostApiSettings.WarehouseSetup[item].WarehouseId)
+                                                <div class="form-group row">
+                                                    <div class="col-md-3">
+                                                        <nop-label asp-for="@Model.CanadaPostApiSettings.WarehouseSetup[item].Name" />
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <div class="col-form-label">
+                                                            <b>@Model.CanadaPostApiSettings.WarehouseSetup[item].Name</b>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group row">
+                                                    <div class="col-md-3">
+                                                        <nop-label asp-for="@Model.CanadaPostApiSettings.WarehouseSetup[item].ApiKey" />
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <input class="form-control text-box single-line valid" asp-for="@Model.CanadaPostApiSettings.WarehouseSetup[item].ApiKey" />
+                                                        <span asp-validation-for="@Model.CanadaPostApiSettings.WarehouseSetup[item].ApiKey"></span>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group row">
+                                                    <div class="col-md-3">
+                                                        <nop-label asp-for="@Model.CanadaPostApiSettings.WarehouseSetup[item].ApiSecret" />
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <input class="form-control text-box single-line valid" asp-for="@Model.CanadaPostApiSettings.WarehouseSetup[item].ApiSecret" />
+                                                        <span asp-validation-for="@Model.CanadaPostApiSettings.WarehouseSetup[item].ApiSecret"></span>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group row">
+                                                    <div class="col-md-3">
+                                                        <nop-label asp-for="@Model.CanadaPostApiSettings.WarehouseSetup[item].APITestResult" />
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <input class="form-control text-box single-line valid" asp-for="@Model.CanadaPostApiSettings.WarehouseSetup[item].APITestResult" asp-disabled="true" />
+                                                        <span asp-validation-for="@Model.CanadaPostApiSettings.WarehouseSetup[item].APITestResult"></span>
+                                                    </div>
+                                                </div>
+                                            }
+                                        </div>
+                                    }
+                                    <div class="form-group row">
+                                        <div class="col-md-3">
+                                            &nbsp;
+                                        </div>
+                                        <div class="col-md-9">
+                                            <input type="submit" name="saveCanadaPostConfiguration" class="btn btn-primary" value="@T("Admin.Common.Save")" />
+                                            <input type="submit" name="validateCanadaPostConfiguration" class="btn bg-purple" value="@T("Plugins.Shipping.Manager.Configure.CanadaPost.Test")" />
+                                            <input type="submit" name="loadCanadaPostConfiguration" class="btn bg-green" value="@T("Plugins.Shipping.Manager.Configure.CanadaPost.LoadConfiguration")" />
+                                        </div>
+                                    </div>
+
+                                </nop-tab>
+                            }
+                        </nop-tabs>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+@*save selected tab name*@
+<input type="hidden" id="selected-tab-name" name="selected-tab-name" value="@(Html.GetSelectedTabName())">
+<script>
+    $(document).ready(function () {
+        bindBootstrapTabSelectEvent('shipping-manager-configure');
+    });
+</script>

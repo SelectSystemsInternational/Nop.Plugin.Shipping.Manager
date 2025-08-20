@@ -1,0 +1,43 @@
+﻿<div class="cards-group basic-setting">
+    <div class="card card-default">
+        <div class="card-body">
+            @await Html.PartialAsync("Table", new DataTablesModel
+       {
+           Name = "shipping-rate-grid",
+           UrlRead = new DataUrl("ShippingManagerFixedShippingRateList", "ShippingManager", null),
+           UrlUpdate = new DataUrl("ShippingManagerUpdateFixedShippingRate", "ShippingManager", null),
+           Length = Model.PageSize,
+           LengthMenu = Model.AvailablePageSizes,
+           ColumnCollection = new List<ColumnProperty>
+                {
+                    new ColumnProperty(nameof(ShippingManagerFixedRateModel.ShippingMethodName))
+                    {
+                        Title = T("Plugins.Shipping.Manager.Fields.ShippingMethod").Text,
+                        Width = "400"
+                    },
+                    new ColumnProperty(nameof(ShippingManagerFixedRateModel.Rate))
+                    {
+                        Title = T("Plugins.Shipping.Manager.Fields.Rate").Text,
+                        Width = "200",
+                        Editable = true,
+                        EditType = EditType.Number
+                    },
+                    new ColumnProperty(nameof(ShippingManagerFixedRateModel.TransitDays))
+                    {
+                        Title = T("Plugins.Shipping.FixedByWeightByTotal.Fields.TransitDays").Text,
+                        Width = "200",
+                        Editable = true,
+                        EditType = EditType.Number
+                    },
+                    new ColumnProperty(nameof(ShippingManagerFixedRateModel.ShippingMethodId))
+                    {
+                        Title = T("Admin.Common.Edit").Text,
+                        Width = "200",
+                        ClassName =  NopColumnClassDefaults.Button,
+                        Render = new RenderButtonsInlineEdit()
+                    }
+                }
+       })
+        </div>
+    </div>
+</div>

@@ -1,0 +1,92 @@
+﻿@model EntityGroupModel
+
+<div asp-validation-summary="All"></div>
+<input asp-for="Id" type="hidden" />
+
+@{
+    var hideInternationalOperations = "none";
+    if (shippingManagerSettings.InternationalOperationsEnabled)
+    {
+        hideInternationalOperations = string.Empty;
+    }
+}
+
+@if (ViewBag.RefreshPage == true)
+{
+    <script>
+        try {window.opener.document.forms['@(Context.Request.Query["formId"])'].@(Context.Request.Query["btnId"]).click();}
+        catch (e){}
+        window.close();
+    </script>
+}
+
+<div class="cards-group">
+    <div class="card card-default card-popup">
+        <div class="card-body">
+            <div class="form-group row">
+                <div class="col-sm-3">
+                    <nop-label asp-for="KeyGroupId" />
+                </div>
+                <div class="col-sm-9">
+                    <nop-select asp-for="KeyGroupId" asp-items="Model.KeyGroupList" />
+                    <span asp-validation-for="KeyGroupId"></span>
+                </div>
+            </div>
+            <div class="form-group row">
+                <div class="col-sm-3">
+                    <nop-label asp-for="EntityId" />
+                </div>
+                <div class="col-sm-9">
+                    <nop-select asp-for="EntityId" asp-items="Model.AvailableEntity" />
+                    <span asp-validation-for="EntityId"></span>
+                </div>
+            </div>
+            <div class="form-group row">
+                <div class="col-sm-3">
+                    <nop-label asp-for="KeyId" />
+                </div>
+                <div class="col-sm-9">
+                    <nop-select asp-for="KeyId" asp-items="Model.KeyList" />
+                    <span asp-validation-for="KeyId"></span>
+                </div>
+            </div>
+            <div class="form-group row">
+                <div class="col-sm-3">
+                    <nop-label asp-for="Value" />
+                </div>
+                <div class="col-sm-9">
+                    <nop-editor asp-for="Value" asp-postfix="@Model.Value" />
+                    <span asp-validation-for="Value"></span>
+                </div>
+            </div>
+            <div class="form-group row" @(Model.AvailableStores.SelectionIsNotPossible() ? Html.Raw("style=\"display:none\"") : null)>
+                <div class="col-sm-3">
+                    <nop-label asp-for="StoreId" />
+                </div>
+                <div class="col-sm-9">
+                    <nop-select asp-for="StoreId" asp-items="Model.AvailableStores" />
+                    <span asp-validation-for="StoreId"></span>
+                </div>
+            </div>
+            <div class="form-group row">
+                <div class="col-sm-3">
+                    <nop-label asp-for="VendorId" />
+                </div>
+                <div class="col-sm-9">
+                    <nop-select asp-for="VendorId" asp-items="Model.AvailableVendors" />
+                    <span asp-validation-for="VendorId"></span>
+                </div>
+            </div>
+            <div class="form-group row">
+                <div class="col-sm-3">
+                    <nop-label asp-for="WarehouseId" />
+                </div>
+                <div class="col-sm-9">
+                    <nop-select asp-for="WarehouseId" asp-items="Model.AvailableWarehouses" />
+                    <span asp-validation-for="WarehouseId"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<nop-alert asp-alert-id="getStatesByCountryIdAlert" asp-alert-message="@T("Admin.Common.Alert.States.Failed")" />

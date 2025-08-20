@@ -1,0 +1,51 @@
+@model DatesRangesSearchModel
+
+@{
+    bool vendorVisible = Model.VendorId == 0;
+}
+
+<div class="card-body">
+    <h3>@T("Plugins.Shipping.Manager.CutOffTimes")</h3>
+    <p><em>@T("Plugins.Shipping.Manager.CutOffTimes.Hint")</em></p>
+    @await Html.PartialAsync("Table", new DataTablesModel
+    {
+        Name = "cutofftime-grid",
+        UrlRead = new DataUrl("CutOffTime", "ShippingOperations", null),
+        SearchButtonId = "search-categories",
+        Length = Model.CutOffTimeSearchModel.PageSize,
+        LengthMenu = Model.CutOffTimeSearchModel.AvailablePageSizes,
+        ColumnCollection = new List<ColumnProperty>
+        {
+            new ColumnProperty(nameof(CutOffTimeModel.Name))
+            {
+                Title = T("Plugins.Shipping.Manager.CutOffTimes.Fields.Name").Text,
+                Width = "200"
+            },
+            new ColumnProperty(nameof(CutOffTimeModel.VendorName))
+            {
+                Title = T("Plugins.Shipping.Manager.Fields.Vendor").Text,
+                Width = "300",
+                Visible = vendorVisible
+            },
+            new ColumnProperty(nameof(CutOffTimeModel.DisplayOrder))
+            {
+                Title = T("Plugins.Shipping.Manager.CutOffTimes.Fields.DisplayOrder").Text,
+                Width = "150",
+                ClassName =  NopColumnClassDefaults.CenterAll
+            },
+            new ColumnProperty(nameof(CutOffTimeModel.Id))
+            {
+                Title = T("Admin.Common.Edit").Text,
+                Width = "100",
+                ClassName =  NopColumnClassDefaults.Button,
+                Render = new RenderButtonEdit(new DataUrl("EditCutOffTime"))
+            }
+        }
+    })
+</div>
+<div class="card-footer">
+    <a asp-action="CreateCutOffTime" class="btn btn-primary">
+        <i class="fa fa-plus-square"></i>
+        @T("Admin.Common.AddNew")
+    </a>
+</div>         

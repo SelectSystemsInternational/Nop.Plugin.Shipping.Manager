@@ -1,0 +1,78 @@
+﻿@model VendorScopeConfigurationModel
+
+@inject Nop.Core.IWebHelper webHelper
+
+@{
+    var returnUrl = webHelper.GetRawUrl(Context.Request);
+    var vendors = Model.Vendors.Select(vendor => new SelectListItem
+    {
+        Text = vendor.Name,
+        Value = Url.Action("ChangeVendorScopeConfiguration", "EntityGroup", new { vendorid = vendor.Id, returnUrl }, webHelper.GetCurrentRequestProtocol()),
+        Selected = vendor.Id.Equals(Model.VendorId)
+    }).ToList();
+    if (vendors.Count() > 1)
+    {
+        vendors.Insert(0, new SelectListItem
+        {
+            Text = T("Plugins.Shipping.Manager.VendorScope.AllVendors").Text,
+            Value = Url.Action("ChangeVendorScopeConfiguration", "EntityGroup", new { vendorid = 0, returnUrl }, webHelper.GetCurrentRequestProtocol()),
+            Selected = 0.Equals(Model.VendorId)
+        });
+    }
+    var vendorGroups = Model.VendorGroupMembers.Select(vendor => new SelectListItem
+    {
+        Text = vendor.Name,
+        Value = Url.Action("ChangeGroupVendorScopeConfiguration", "EntityGroup", new { vendorid = vendor.Id, returnUrl }, webHelper.GetCurrentRequestProtocol()),
+        Selected = vendor.Id.Equals(Model.GroupVendorId)
+    }).ToList();
+    vendorGroups.Insert(0, new SelectListItem
+    {
+        Text = T("Plugins.Shipping.Manager.VendorScope.SelectGroupVendor").Text,
+        Value = Url.Action("ChangeGroupVendorScopeConfiguration", "EntityGroup", new { vendorid = 0, returnUrl }, webHelper.GetCurrentRequestProtocol()),
+        Selected = 0.Equals(Model.VendorId)
+    });
+}
+
+<style>
+    .group-body {
+        -ms-flex: 1 1 auto;
+        flex: 1 1 auto;
+        min-height: 1px;
+        padding: 0.7rem 0.25rem 0.25rem 1rem;
+    }
+
+        .group-body .control-label {
+            padding: 0.5rem 0.25rem 0.5rem 1rem;
+        }
+</style>
+
+@if (Model.DisplayControl)
+{
+    <div class="cards-group">
+        <div class="card card-default">
+            <div class="group-body">
+                <div class="form-group row">
+                    <div class="col-md-2">
+                        <h4>
+                            @T("Plugins.Shipping.Manager.VendorScope.VendorScope")
+                        </h4>
+                    </div>
+                    <div class="col-sm-2 vendor-scope-configuration">
+                        <label class="control-label">
+                            @T("Plugins.Shipping.Manager.VendorScope.SelectVendor")
+                        </label>
+                    </div>
+                    <div class="col-sm-3">
+                        <nop-select asp-for-name="vendor-scope-configuration" asp-items="@vendors" onchange="setLocation(this.value);" />
+                    </div>
+                    @if (Model.DisplayControlVendorGroups)
+                    {
+                        <div class="col-sm-3">
+                            <nop-select asp-for-name="vendor-group-scope-configuration" asp-items="@vendorGroups" onchange="setLocation(this.value);" />
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+}

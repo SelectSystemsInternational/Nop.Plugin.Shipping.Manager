@@ -1,0 +1,51 @@
+@model DatesRangesSearchModel
+
+@{
+    bool vendorVisible = Model.VendorId == 0;
+}
+
+<div class="card-body">
+    <h3>@T("Admin.Configuration.Shipping.ProductAvailabilityRanges")</h3>
+    <p><em>@T("Admin.Configuration.Shipping.ProductAvailabilityRanges.Hint")</em></p>
+    @await Html.PartialAsync("Table", new DataTablesModel
+    {
+        Name = "productavailabilityrange-grid",
+        UrlRead = new DataUrl("ProductAvailabilityRanges", "ShippingOperations", null),
+        SearchButtonId = "search-categories",
+        Length = Model.ProductAvailabilityRangeSearchModel.PageSize,
+        LengthMenu = Model.ProductAvailabilityRangeSearchModel.AvailablePageSizes,
+        ColumnCollection = new List<ColumnProperty>
+        {
+            new ColumnProperty(nameof(ProductAvailabilityRangeModel.Name))
+            {
+                Title = T("Admin.Configuration.Shipping.ProductAvailabilityRanges.Fields.Name").Text,
+                Width = "200"
+            },
+            new ColumnProperty(nameof(DeliveryDateModel.VendorName))
+            {
+                Title = T("Plugins.Shipping.Manager.Fields.Vendor").Text,
+                Width = "300",
+                Visible = vendorVisible
+            },
+            new ColumnProperty(nameof(ProductAvailabilityRangeModel.DisplayOrder))
+            {
+                Title = T("Admin.Configuration.Shipping.ProductAvailabilityRanges.Fields.DisplayOrder").Text,
+                Width = "150",
+                ClassName =  NopColumnClassDefaults.CenterAll
+            },
+            new ColumnProperty(nameof(ProductAvailabilityRangeModel.Id))
+            {
+                Title = T("Admin.Common.Edit").Text,
+                Width = "100",
+                ClassName =  NopColumnClassDefaults.Button,
+                Render = new RenderButtonEdit(new DataUrl("EditProductAvailabilityRange"))
+            }
+        }
+    })
+</div>
+<div class="card-footer">
+    <a asp-action="CreateProductAvailabilityRange" class="btn btn-primary">
+        <i class="fa fa-plus-square"></i>
+        @T("Admin.Common.AddNew")
+    </a>
+</div>         

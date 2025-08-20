@@ -1,0 +1,165 @@
+﻿@model ShippingManagerModel
+
+@{
+    Layout = "_AdminLayout";
+
+    //page title
+    ViewBag.Title = T("Plugins.Shipping.Manager.Manage").Text;
+    //active menu item (system name)
+    NopHtml.SetActiveMenuItemSystemName("Nop.Plugins.Shipping.Manager.Manage");
+}
+
+<form asp-controller="ShippingManager" asp-action="Manage" method="post">
+    <div class="content-header clearfix">
+        <h1 class="float-left">
+            @T("Plugins.Shipping.Manager.Manage")
+        </h1>
+        <div class="float-right">
+            <button type="button" name="importexcel" class="btn btn-success" data-toggle="modal" data-target="#importexcel-window">
+                <i class="fas fa-upload"></i>
+                @T("Admin.Common.Import")
+            </button>
+            <div class="btn-group">
+                <button type="button" class="btn btn-success">
+                    <i class="fas fa-download"></i>
+                    @T("Admin.Common.Export")
+                </button>
+                <button type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                    <span class="caret"></span>
+                    <span class="sr-only">&nbsp;</span>
+                </button>
+                <ul class="dropdown-menu" role="menu">
+                    <li>
+                        <button type="submit" name="ExportRatesToExcel">
+                            <i class="fas fa-file-excel-o"></i>
+                            @T("Admin.Common.ExportToExcel.All")
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="content">
+        <div class="form-horizontal">
+            @await Component.InvokeAsync("VendorScopeConfiguration")
+            <div class="cards-group">
+                <div class="card card-default">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="onoffswitch">
+                                    <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="advanced-settings-mode" checked="@Model.ShippingByWeightByTotalEnabled">
+                                    <label class="onoffswitch-label" for="advanced-settings-mode">
+                                        <span class="onoffswitch-inner"
+                                              data-locale-basic="@T("Plugins.Shipping.Manager.Fixed")"
+                                              data-locale-advanced="@T("Plugins.Shipping.Manager.ShippingByWeight")"></span>
+                                        <span class="onoffswitch-switch"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-9">
+                                <div class="float-right">
+                                    <a asp-controller="ShippingOperations" asp-action="Methods" class="btn btn-primary">
+                                        <i class="fas fa-truck"></i>
+                                        @T("Admin.Configuration.Shipping.Methods.Manage")
+                                    </a>
+                                    @if (shippingManagerSettings.InternationalOperationsEnabled && !Model.ShippingByWeightByTotalEnabled)
+                                    {
+                                        <a asp-controller="ShippingOperations" asp-action="Restrictions" class="btn btn-primary">
+                                            <i class="fa fa-globe"></i>
+                                            @T("Admin.Configuration.Shipping.Restrictions")
+                                        </a>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    @await Html.PartialAsync("~/Plugins/SSI.Shipping.Manager/Views/_FixedRate.cshtml")
+                    @await Html.PartialAsync("~/Plugins/SSI.Shipping.Manager/Views/_ByWeightByTotal.cshtml", Model)
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<div id="importexcel-window" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="importexcel-window-title">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="importexcel-window-title">@T("Admin.Common.ImportFromExcel")</h4>
+            </div>
+            <form asp-controller="ShippingManager" asp-action="ImportRatesToExcel" method="post" enctype="multipart/form-data">
+                <div class="form-horizontal">
+                    <div class="modal-body">
+                        <ul class="common-list">
+                            <li>
+                                <em>@T("Plugins.Shipping.Manager.ByWeightByTotal.ImportFromExcelTip")</em>
+                            </li>
+                            <li>
+                                <em>@T("Admin.Common.ImportFromExcel.ManyRecordsWarning")</em>
+                            </li>
+                            <li style="color:#3c8dbc">@T("Plugins.Shipping.Manager.ByWeightByTotal.ExcelFileUploadTip")</li>
+                            <li>
+                                <a href="~/Plugins/SSI.Shipping.Manager/ExportImport/SampleTemplate.xlsx"><i class="fa fa-download" aria-hidden="true"></i>@T("Plugins.Shipping.Manager.ByWeightByTotal.SampleExcel")</a>
+                            </li>
+                        </ul>
+                        <div class="form-group row">
+                            <div class="col-md-2">
+                                <div class="label-wrapper">
+                                    <label class="control-label">
+                                        @T("Admin.Common.ExcelFile")
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-10">
+                                <input type="file" id="importexcelfile" name="importexcelfile" class="form-control" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary">
+                            @T("Admin.Common.ImportFromExcel")
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+function checkAdvancedSettingsMode(advanced) {
+    if (advanced) {
+        $("body").addClass("advanced-settings-mode");
+        $("body").removeClass("basic-settings-mode");
+    } else {
+        $("body").removeClass("advanced-settings-mode");
+        $("body").addClass("basic-settings-mode");
+    }
+}
+checkAdvancedSettingsMode($("#advanced-settings-mode").is(':checked'));
+$(document)
+    .ready(function() {
+        $("#advanced-settings-mode")
+            .click(function() {
+                checkAdvancedSettingsMode($(this).is(':checked'));
+                $.ajax({
+                    cache: false,
+                    url: "@Url.Action("SaveMode", "ShippingManager")",
+                    type: "POST",
+                    data: {
+                        value: $(this).is(':checked')
+                    },
+                    dataType: "json",
+                    error: function (jqXHR, textStatus, errorThrown) {
+                        $("#saveModeAlert").click();
+                    }
+                });
+                ensureDataTablesRendered();
+            });
+    });
+</script>
+
+<nop-alert asp-alert-id="saveModeAlert" asp-alert-message="@T("Admin.Common.Alert.Save.Error")" />

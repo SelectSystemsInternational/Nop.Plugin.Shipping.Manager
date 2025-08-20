@@ -1,0 +1,34 @@
+@model WarehouseModel
+
+@{
+    Layout = "_AdminLayout";
+    
+    //page title
+    ViewBag.Title = T("Admin.Configuration.Shipping.Warehouses.AddNew").Text;
+    //active menu item (system name)
+    NopHtml.SetActiveMenuItemSystemName("Nop.Plugins.Shipping.Manager.Warehouses");
+}
+
+<form asp-controller="ShippingOperations" asp-action="CreateWarehouse" method="post">
+    <div class="content-header clearfix">
+        <h1 class="float-left">
+            @T("Admin.Configuration.Shipping.Warehouses.AddNew")
+            <small>
+                <i class="fa fa-arrow-circle-left"></i>
+                <a asp-action="Warehouses">@T("Admin.Configuration.Shipping.Warehouses.BackToList")</a>
+            </small>
+        </h1>
+        <div class="float-right">
+            <button type="submit" name="save" class="btn btn-primary">
+                <i class="far fa-save"></i>
+                @T("Admin.Common.Save")
+            </button>
+            <button type="submit" name="save-continue" class="btn btn-primary">
+                <i class="far fa-save"></i>
+                @T("Admin.Common.SaveContinue")
+            </button>
+            @await Component.InvokeAsync("AdminWidget", new { widgetZone = AdminWidgetZones.WarehouseDetailsButtons })
+        </div>
+    </div>
+    @await Html.PartialAsync("~/Plugins/SSI.Shipping.Manager/Views/Shipping/_CreateOrUpdateWarehouse.cshtml")
+</form>

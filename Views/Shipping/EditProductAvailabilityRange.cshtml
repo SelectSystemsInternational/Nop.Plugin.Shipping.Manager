@@ -1,0 +1,43 @@
+@model ProductAvailabilityRangeModel
+
+@{
+    Layout = "_AdminLayout";
+    
+    //page title
+    ViewBag.Title = T("Admin.Configuration.Shipping.ProductAvailabilityRanges.EditProductAvailabilityRangeDetails").Text;
+    //active menu item (system name)
+    NopHtml.SetActiveMenuItemSystemName("Nop.Plugins.Shipping.Manager.DatesAndRanges");
+}
+
+
+<form asp-controller="ShippingOperations" asp-action="EditProductAvailabilityRange" method="post">
+    <div class="content-header clearfix">
+        <h1 class="float-left">
+            @T("Admin.Configuration.Shipping.ProductAvailabilityRanges.EditProductAvailabilityRangeDetails") - @Model.Name
+            <small>
+                <i class="fa fa-arrow-circle-left"></i>
+                <a asp-action="DatesAndRanges">@T("Admin.Configuration.Shipping.ProductAvailabilityRanges.BackToList")</a>
+            </small>
+        </h1>
+        <div class="float-right">
+            <button type="submit" name="save" class="btn btn-primary">
+                <i class="far fa-save"></i>
+                @T("Admin.Common.Save")
+            </button>
+            <button type="submit" name="save-continue" class="btn btn-primary">
+                <i class="far fa-save"></i>
+                @T("Admin.Common.SaveContinue")
+            </button>
+            <span id="product-availability-range-delete" class="btn bg-red">
+                <i class="far fa-trash-alt"></i>
+                @T("Admin.Common.Delete")
+            </span>
+            @await Component.InvokeAsync("AdminWidget", new { widgetZone = AdminWidgetZones.ProductAvailabilityRangeDetailsButtons, additionalData = Model })
+        </div>
+    </div>
+    <div class="content">
+        @await Component.InvokeAsync("VendorScopeConfiguration")
+        @await Html.PartialAsync("~/Plugins/SSI.Shipping.Manager/Views/Shipping/_CreateOrUpdateProductAvailabilityRange.cshtml")
+    </div>
+</form>
+<nop-delete-confirmation asp-model-id="@Model.Id" asp-button-id="product-availability-range-delete" asp-action="DeleteProductAvailabilityRange" />

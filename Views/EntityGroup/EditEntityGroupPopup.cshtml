@@ -1,0 +1,24 @@
+﻿@model EntityGroupModel
+
+@{
+    Layout = "_AdminPopupLayout";
+}
+
+<form asp-controller="EntityGroup" asp-action="EditEntityGroupPopup"
+      asp-route-btnId="@Context.Request.Query["btnId"]"
+      asp-route-formId="@Context.Request.Query["formId"]">
+    <div class="content-header clearfix">
+        <h1 class="float-left">
+            @T("Admin.Common.Edit")
+        </h1>
+        <div class="float-right">
+            <input type="submit" name="save" class="btn btn-primary" value="@T("Admin.Common.Save")" />
+        </div>
+    </div>
+
+    <div class="content">
+        <div class="form-horizontal">
+            @await Html.PartialAsync("~/Plugins/SSI.Shipping.Manager/Views/EntityGroup/_CreateOrUpdateEntityGroup.cshtml", Model)
+        </div>
+    </div>
+</form>

@@ -1,0 +1,320 @@
+﻿@model ShippingManagerModel
+
+@using Nop.Plugin.Shipping.Manager.Models
+
+@{
+    var stores = await storeService.GetAllStoresAsync();
+
+    const string hideSearchBlockAttributeName = "ShippingManagerFixedByWeightByTotalPage.HideSearchBlock";
+    var hideSearchBlock = await genericAttributeService.GetAttributeAsync<bool>(await workContext.GetCurrentCustomerAsync(), hideSearchBlockAttributeName);
+
+    var hideInternationalOperations = "none";
+    if (shippingManagerSettings.InternationalOperationsEnabled)
+    {
+        hideInternationalOperations = string.Empty;
+    }
+}
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $("#@Html.IdFor(model => model.SearchCountryId)").change(function () {
+            var selectedItem = $(this).val();
+            var ddlStates = $("#@Html.IdFor(model => model.SearchStateProvinceId)");
+            $.ajax({
+                cache: false,
+                type: "GET",
+                url: "@(Url.Action("GetStatesByCountryId", "Country"))",
+                data: {
+                    "countryId": selectedItem,
+                    "addAsterisk": "true"
+                },
+                success: function (data, textStatus, jqXHR) {
+                    ddlStates.html('');
+                    $.each(data, function (id, option) {
+                        ddlStates.append($('<option></option>').val(option.id).html(option.name));
+                    });
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    $("#getStatesByCountryIdAlert").click();
+                }
+            });
+        });
+    });
+</script>
+
+<form asp-controller="ShippingManager" asp-action="Manage" method="post" id="shipping-byweight-form">
+    <input type="submit" id="btnRefresh" class="btn btn-default" style="display: none" />
+    <div class="cards-group advanced-setting">
+        <div class="form-horizontal">
+            <div class="card card-default card-search">
+                <div class="card-body">
+                    <div class="row search-row @(!hideSearchBlock ? "opened" : "")" data-hideAttribute="@hideSearchBlockAttributeName">
+                        <div class="search-text">@T("Admin.Common.Search")</div>
+                        <div class="icon-search"><i class="fa fa-search" aria-hidden="true"></i></div>
+                        <div class="icon-collapse"><i class="fa fa-angle-down" aria-hidden="true"></i></div>
+                    </div>
+                    <div class="search-body @(hideSearchBlock ? "closed" : "")">
+                        <div class="row">
+                            <div class="col-md-5">
+                                <div class="form-group row">
+                                    <div class="col-md-4">
+                                        <nop-label asp-for="SearchStoreId" />
+                                    </div>
+                                    <div class="col-md-8">
+                                        <nop-select asp-for="SearchStoreId" asp-items="Model.AvailableStores" />
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-md-4">
+                                        <nop-label asp-for="SearchWarehouseId" />
+                                    </div>
+                                    <div class="col-md-8">
+                                        <nop-select asp-for="SearchWarehouseId" asp-items="Model.AvailableWarehouses" />
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-md-4">
+                                        <nop-label asp-for="SearchCarrierId" />
+                                    </div>
+                                    <div class="col-md-8">
+                                        <nop-select asp-for="SearchCarrierId" asp-items="Model.AvailableCarriers" />
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-md-4">
+                                        <nop-label asp-for="SearchShippingMethodId" />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <nop-select asp-for="SearchShippingMethodId" asp-items="Model.AvailableShippingMethods" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-7">
+                                <div class="form-group row" style="display:@hideInternationalOperations">
+                                    <div class="col-md-4">
+                                        <nop-label asp-for="SearchCountryId" />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <nop-select asp-for="SearchCountryId" asp-items="Model.AvailableCountries" />
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-md-4">
+                                        <nop-label asp-for="SearchStateProvinceId" />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <nop-select asp-for="SearchStateProvinceId" asp-items="Model.AvailableStates" />
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-md-4">
+                                        <nop-label asp-for="SearchZip" />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <nop-editor asp-for="SearchZip" />
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-md-4">
+                                        <nop-label asp-for="SearchShippingMethodId" />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <nop-select asp-for="SearchShippingMethodId" asp-items="Model.AvailableShippingMethods" />
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-md-4">
+                                        <nop-label asp-for="SearchActive" />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <nop-editor asp-for="SearchActive" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="text-center col-12">
+                                <button type="button" id="search-shipping-byweight-records" class="btn btn-primary btn-search">
+                                    <i class="fas fa-search"></i>
+                                    @T("Admin.Common.Search")
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card card-default">
+                <div class="card-body">
+                    <p>
+                        <b>@T("Plugins.Shipping.Manager.Formula")</b>
+                        @T("Plugins.Shipping.Manager.Formula.Value")
+                    </p>
+                    @await Html.PartialAsync("Table", new DataTablesModel
+                    {
+                        Name = "shipping-byweight-grid",
+                        UrlRead = new DataUrl("RateByWeightByTotalList", "ShippingManager", null),
+                        UrlDelete = new DataUrl("DeleteRateByWeightByTotal", "ShippingManager", null),
+                        SearchButtonId = "search-shipping-byweight-records",
+                        Length = Model.PageSize,
+                        LengthMenu = Model.AvailablePageSizes,
+                        Filters = new List<FilterParameter>
+                        {
+                            new FilterParameter(nameof(Model.SearchStoreId)),
+                            new FilterParameter(nameof(Model.SearchWarehouseId)),
+                            new FilterParameter(nameof(Model.SearchCarrierId)),
+                            new FilterParameter(nameof(Model.SearchShippingMethodId)),
+                            new FilterParameter(nameof(Model.SearchCountryId)),
+                            new FilterParameter(nameof(Model.SearchStateProvinceId)),
+                            new FilterParameter(nameof(Model.SearchZip)),
+                            new FilterParameter(nameof(Model.SearchActive), typeof(bool))
+                        },
+                        ColumnCollection = new List<ColumnProperty>
+                        {
+                            new ColumnProperty(nameof(ShippingManagerByWeightByTotalModel.StoreName))
+                            {
+                                Title = T("Plugins.Shipping.Manager.Fields.Store").Text,
+                                Width = "70",
+                                Visible = stores.Count > 1
+                            },
+                            new ColumnProperty(nameof(ShippingManagerByWeightByTotalModel.VendorName))
+                            {
+                                Title = T("Plugins.Shipping.Manager.Fields.Vendor").Text,
+                                Width = "150",
+                                Visible = Model.DisplayVendor
+                            },
+                            new ColumnProperty(nameof(ShippingManagerByWeightByTotalModel.WarehouseName))
+                            {
+                                Title = T("Plugins.Shipping.Manager.Fields.Warehouse").Text,
+                                Width = "150"
+                            },
+                            new ColumnProperty(nameof(ShippingManagerByWeightByTotalModel.CarrierName))
+                            {
+                                Title = T("Plugins.Shipping.Manager.Fields.Carrier").Text,
+                                Width = "150"
+                            },
+                            new ColumnProperty(nameof(ShippingManagerByWeightByTotalModel.CountryName))
+                            {
+                                Title = T("Plugins.Shipping.Manager.Fields.Country").Text,
+                                Width = "200",
+                                Visible = @shippingManagerSettings.InternationalOperationsEnabled
+                            },
+                            new ColumnProperty(nameof(ShippingManagerByWeightByTotalModel.StateProvinceName))
+                            {
+                                Title = T("Plugins.Shipping.Manager.Fields.StateProvince").Text,
+                                Width = "150"
+                            },
+                            new ColumnProperty(nameof(ShippingManagerByWeightByTotalModel.Zip))
+                            {
+                                Title = T("Plugins.Shipping.Manager.Fields.Zip").Text,
+                                Width = "80"
+                            },
+                            new ColumnProperty(nameof(ShippingManagerByWeightByTotalModel.ShippingMethodName))
+                            {
+                                Title = T("Plugins.Shipping.Manager.Fields.ShippingMethod").Text,
+                                Width = "200"
+                            },
+                            new ColumnProperty(nameof(ShippingManagerByWeightByTotalModel.DataHtml))
+                            {
+                                Title = T("Plugins.Shipping.Manager.Fields.DataHtml").Text,
+                                Width = "400",
+                                Encode = false
+                            },
+                            new ColumnProperty(nameof(ShippingManagerByWeightByTotalModel.Id))
+                            {
+                                Title = T("Admin.Common.Edit").Text,
+                                ClassName = NopColumnClassDefaults.Button,
+                                Width = "80",
+                                Render = new RenderCustom("renderColumnEdit")
+                            },
+                            new ColumnProperty(nameof(ShippingManagerByWeightByTotalModel.Id))
+                            {
+                                Title = T("Admin.Common.Delete").Text,
+                                ClassName = NopColumnClassDefaults.Button,
+                                Render = new RenderButtonRemove(T("Admin.Common.Delete").Text),
+                                Width = "80"
+                            }
+                        }
+                    })
+                </div>
+                <div class="card-footer">
+                    <button type="submit" id="btnAddNewRecord" class="btn btn-primary"
+                        onclick="javascript:OpenWindow('@(Url.Action("AddRateByWeightByTotalPopup", "ShippingManager",
+                        new {btnId = "btnRefresh", formId = "shipping-byweight-form"}))', 900, 700, true);return false;">
+                        @T("Plugins.Shipping.Manager.AddRecord")
+                    </button>
+                </div>
+            </div>
+            <div class="panel panel-advanced-setting">
+                <div class="form-group row">
+                    <div class="col-md-4">
+                        <nop-label asp-for="LimitMethodsToCreated" />
+                    </div>
+                    <div class="col-md-3">
+                        <nop-editor asp-for="LimitMethodsToCreated" />
+                        <span asp-validation-for="LimitMethodsToCreated"></span>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <div class="col-md-4">
+                        <nop-label asp-for="ReturnValidOptionsIfThereAreAny" />
+                    </div>
+                    <div class="col-md-3">
+                        <nop-editor asp-for="ReturnValidOptionsIfThereAreAny" />
+                        <span asp-validation-for="ReturnValidOptionsIfThereAreAny"></span>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <div class="col-md-4">
+                        &nbsp;
+                    </div>
+                    <div class="col-md-3">
+                        <input type="button" id="savegeneralsettings" class="btn btn-primary" value="@T("Admin.Common.Save")" />
+                        <script>
+                            function renderColumnEdit(data, type, row, meta) {
+                                return '<button onclick=\"javascript:OpenWindow(\'@Url.Action("EditRateByWeightByTotalPopup", "ShippingManager")?id='
+                                    + data + '&btnId=btnRefresh\', 900, 700, true); return false;\" class="btn btn-default"><i class="fa fa-pencil"></i>@T("Admin.Common.Edit")</button>';
+                            }
+                            $(document).ready(function() {
+                                $('#savegeneralsettings').click(function() {
+                                    var postData = $(this.form).serialize();
+                                    addAntiForgeryToken(postData);
+
+                                    $.ajax({
+                                        cache: false,
+                                        type: "POST",
+                                        url: "@Url.Action("Manage", "ShippingManager")",
+                                        data: postData,
+                                        dataType: "json",
+                                        success: function (data, textStatus, jqXHR) {
+                                            $("#savegeneralsettingsOk").click();
+                                        },
+                                        error: function (jqXHR, textStatus, errorThrown) {
+                                            $("#savegeneralsettingsError").click();
+                                        }
+                                    });
+                                    return false;
+                                });
+                            });
+                        </script>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <script>
+        $(document).ready(function () {
+            $('#btnRefresh')
+                .click(function () {
+                    //refresh grid
+                    updateTable('#shipping-byweight-grid');
+                    //return false to don't reload a page
+                    return false;
+                });
+        });
+    </script>
+
+</form>
+<nop-alert asp-alert-id="getStatesByCountryIdAlert" asp-alert-message="@T("Admin.Common.Alert.States.Failed")" />
+<nop-alert asp-alert-id="savegeneralsettingsOk" asp-alert-message="@T("Admin.Common.Alert.Save.Ok")" />
+<nop-alert asp-alert-id="savegeneralsettingsError" asp-alert-message="@T("Admin.Common.Alert.Save.Error")" />

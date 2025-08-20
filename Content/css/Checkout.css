@@ -1,0 +1,28 @@
+﻿/*start classes for jquery code*/
+.SMextrainfo {
+  padding-top: 10px;
+  font-size: 16px;
+  color: #444;
+}
+
+.SMspaddress {
+  padding-top: 10px;
+  font-size: 16px;
+  color: #444;
+}
+
+.section .section-title {
+  margin: 0 0 5px;
+  font-size: 24px;
+  color: #444;
+  text-align: center;
+}
+
+.section .section-body {
+  padding-top: 10px;
+  font-size: 16px;
+  color: #444;
+  display: block;
+  text-align: center;
+}
+/*end classes for jquery code*/

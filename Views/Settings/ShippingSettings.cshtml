@@ -1,0 +1,46 @@
+@model Nop.Web.Areas.Admin.Models.Settings.ShippingSettingsModel
+
+@{
+    Layout = "_AdminLayout";
+
+    //page title
+    ViewBag.PageTitle = T("Admin.Configuration.Settings.Shipping").Text;
+    //active menu item (system name)
+    NopHtml.SetActiveMenuItemSystemName("Nop.Plugins.Shipping.Manager.ShippingSettings");
+}
+
+@{
+    const string hideCommonBlockAttributeName = "ShippingSettingsPage.HideCommonBlock";
+    var customer = await workContext.GetCurrentCustomerAsync();
+    var hideCommonBlock = await genericAttributeService.GetAttributeAsync<bool>(customer, hideCommonBlockAttributeName);
+
+    const string hideShippingOriginBlockAttributeName = "ShippingSettingsPage.HideShippingOriginBlock";
+    var hideShippingOriginBlock = await genericAttributeService.GetAttributeAsync<bool>(customer, hideShippingOriginBlockAttributeName);
+}
+
+<form asp-controller="ShippingSetting" asp-action="Shipping" method="post">
+    <div class="content-header clearfix">
+        @await Component.InvokeAsync("VendorScopeConfiguration")
+        <h1 class="float-left">
+            @T("Admin.Configuration.Settings.Shipping")
+        </h1>
+        <div class="float-right">
+            <button type="submit" name="save" class="btn btn-primary">
+                <i class="far fa-save"></i>
+                @T("Admin.Common.Save")
+            </button>
+        </div>
+    </div>
+
+    <section class="content">
+        <div class="container-fluid">
+            <div class="form-horizontal">
+                <div asp-validation-summary="All"></div>
+                <nop-cards id="product-cards">
+                    <nop-card asp-name="product-info" asp-icon="fas fa-info" asp-title="@T("Admin.Configuration.Settings.Shipping.BlockTitle.Common")" asp-hide-block-attribute-name="@hideCommonBlockAttributeName" asp-hide="@hideCommonBlock" asp-advanced="false">@await Html.PartialAsync("~/Plugins/SSI.Shipping.Manager/Views/Settings/_Shipping.Common.cshtml", Model)</nop-card>
+                    <nop-card asp-name="product-shipping-origin" asp-icon="fas fa-truck" asp-title="@T("Admin.Configuration.Settings.Shipping.ShippingOriginAddress")" asp-hide-block-attribute-name="@hideShippingOriginBlockAttributeName" asp-hide="@hideShippingOriginBlock" asp-advanced="false">@await Html.PartialAsync("~/Plugins/SSI.Shipping.Manager/Views/Settings/_Shipping.ShippingOrigin.cshtml", Model)</nop-card>
+                </nop-cards>
+            </div>
+        </div>
+    </section>
+</form>

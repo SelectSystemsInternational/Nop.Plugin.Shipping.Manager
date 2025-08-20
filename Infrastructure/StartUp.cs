@@ -1,0 +1,43 @@
+﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Razor;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Nop.Core.Infrastructure;
+
+using Nop.Plugin.Shipping.Manager.ViewEngine;
+
+namespace Nop.Plugin.Shipping.Manager.ActionFilter
+{
+    public class Startup : INopStartup
+    {
+        /// <summary>
+        /// Add and configure any of the middleware
+        /// </summary>
+        /// <param name="services">Collection of service descriptors</param>
+        /// <param name="configuration">Configuration of the application</param>
+        public void ConfigureServices(IServiceCollection services, IConfiguration configuration)
+        {
+
+            services.Configure<RazorViewEngineOptions>(o =>
+            {
+                o.ViewLocationExpanders.Add(new CustomViewEngine());
+            });
+
+        }
+
+        /// <summary>
+        /// Configure the using of added middleware
+        /// </summary>
+        /// <param name="application">Builder for configuring an application's request pipeline</param>
+        public void Configure(IApplicationBuilder application)
+        {
+        }
+
+        public int Order
+        {
+            get { return int.MaxValue; }
+        }
+
+    }
+}

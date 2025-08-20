@@ -1,0 +1,503 @@
+@model Nop.Plugin.Shipping.Manager.Models.Order.ShipmentModel
+
+@using Nop.Plugin.Shipping.Manager
+@using Nop.Plugin.Shipping.Manager.Settings
+@inject ShippingManagerSettings shippingManagerSettings;
+
+@{
+    Layout = "_AdminLayout";
+
+    //page title
+    ViewBag.Title = T("Admin.Orders.Shipments.ViewDetails").Text;
+
+    //active menu item (system name)
+    NopHtml.SetActiveMenuItemSystemName("Nop.Plugins.Shipping.Manager.Shipments");
+}
+
+<form asp-controller="OrderOperations" asp-action="ShipmentDetails" method="post">
+    <script>
+        $(document).ready(function () {
+            toggleShippedDate(false);
+            toggleDeliveryDate(false);
+			$('#btnSetshippingmethod').hide();
+        });
+
+        function toggleShippedDate(editmode) {
+        if (editmode) {
+                $('#lblShippedDate').hide();
+                $('#divShippedDate').show();
+                $('#btnEditShippedDate').hide();
+                $('#btnSaveShippedDate').show();
+                $('#btnCancelShippedDate').show();
+            } else {
+                $('#lblShippedDate').show();
+                $('#divShippedDate').hide();
+                $('#btnEditShippedDate').show();
+                $('#btnSaveShippedDate').hide();
+                $('#btnCancelShippedDate').hide();
+            }
+        }
+
+        function toggleDeliveryDate(editmode) {
+            if (editmode) {
+                $('#lblDeliveryDate').hide();
+                $('#divDeliveryDate').show();
+                $('#btnEditDeliveryDate').hide();
+                $('#btnSaveDeliveryDate').show();
+                $('#btnCancelDeliveryDate').show();
+            } else {
+                $('#lblDeliveryDate').show();
+                $('#divDeliveryDate').hide();
+                $('#btnEditDeliveryDate').show();
+                $('#btnSaveDeliveryDate').hide();
+                $('#btnCancelDeliveryDate').hide();
+            }
+        }
+    </script>
+
+    <div class="content-header clearfix">
+        <h1 class="float-left">
+            @T("Admin.Orders.Shipments.ViewDetails") - @Model.Id
+            <small>
+                <i class="fa fa-arrow-circle-left"></i>
+                <a asp-action="Edit" asp-route-id="@Model.OrderId">@T("Plugins.Shipping.Manager.Orders.Shipments.BackToShipmentList")</a>
+            </small>
+        </h1>
+        <div class="float-right">
+            <a asp-action="PdfPackagingSlip" asp-route-shipmentId="@Model.Id" class="btn bg-purple">
+                <i class="far fa-file-pdf"></i>
+                @T("Admin.Orders.Shipments.PrintPackagingSlip")
+            </a>
+            @if (Model.ShippedDate == "Not yet" && 
+		         @Model.ShippingRateComputationMethodSystemName.Contains(ShippingManagerDefaults.CanadaPostSystemName) ||
+                 @Model.ShippingRateComputationMethodSystemName.Contains(ShippingManagerDefaults.SendCloudSystemName) ||
+                 @Model.ShippingRateComputationMethodSystemName.Contains(ShippingManagerDefaults.AramexSystemName))
+            {
+                <a asp-action="CreateShipment" asp-route-shipmentId="@Model.Id" class="btn bg-orange">
+                    <i class="fa fa-gift"></i>
+                    @T("Plugins.Shipping.Manager.Orders.Shipments.CreatePackageSelected")
+                </a>
+            }
+            <span id="shipment-delete" class="btn bg-red">
+                <i class="far fa-trash-alt"></i>
+                @T("Admin.Common.Delete")
+            </span>
+            @await Component.InvokeAsync("AdminWidget", new { widgetZone = AdminWidgetZones.OrderShipmentDetailsButtons, additionalData = Model })
+        </div>
+    </div>
+    <div class="content">
+        <div asp-validation-summary="All"></div>
+        <div class="form-horizontal">
+            <div class="cards-group">
+                <div class="card card-default">
+                    <div class="card-body">
+                        <div class="form-group row">
+                            <div class="col-md-3">
+                                <nop-label asp-for="CustomOrderNumber" />
+                            </div>
+                            <div class="col-md-9">
+                                <a asp-controller="Order" asp-action="Edit" asp-route-id="@Model.OrderId">@Model.CustomOrderNumber - @T("Admin.Common.View")</a>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group row">
+                                    <div class="col-md-6">
+                                        <nop-label asp-for="TrackingNumber" />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="input-group input-group-short float-left">
+                                            <nop-editor asp-for="TrackingNumber" />
+                                            <span class="input-group-btn">
+                                                <button type="submit" name="settrackingnumber" class="btn btn-info">
+                                                    @T("Admin.Orders.Shipments.TrackingNumber.Button")
+                                                </button>
+                                            </span>
+                                        </div>
+                                        @if (!string.IsNullOrEmpty(Model.TrackingNumberUrl))
+                                        {
+                                            <a href="@Model.TrackingNumberUrl" target="_blank" class="margin-l-10">@T("Admin.Orders.Shipments.TrackingNumber.ViewOnline")</a>
+                                            <a href="@Model.LabelUrl" target="_blank" class="margin-l-10">@T("Plugins.Shipping.Manager.Orders.Shipments.PrintLabel")</a>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                            @if (@Model.ShippingRateComputationMethodSystemName == ShippingManagerDefaults.CanadaPostSystemName)
+                            {
+                                <div class="col-md-6">
+                                    <div class="form-group row">
+                                        <div class="col-md-3">
+                                            <nop-label asp-for="ShipmentId" />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="input-group input-group-short float-left">
+                                                <nop-editor asp-for="ShipmentId" />
+                                                <span class="input-group-btn">
+                                                    @if (@Model.ShippingRateComputationMethodSystemName == ShippingManagerDefaults.CanadaPostSystemName)
+                                                    {
+                                                        <button type="submit" name="refundorcancelshipment" class="btn btn-info">
+                                                            @T("Plugins.Shipping.Manager.Orders.Shipments.Refund.Button")
+                                                        </button>
+                                                    }
+                                                    else if (@Model.ShippingRateComputationMethodSystemName == ShippingManagerDefaults.SendCloudSystemName)
+                                                    {
+                                                        <button type="submit" name="refundorcancelshipment" class="btn btn-info">
+                                                            @T("Plugins.Shipping.Manager.Orders.Shipments.Cancel.Button")
+                                                        </button>
+                                                    }   
+                                                </span>
+                                            </div>
+                                            @if (!string.IsNullOrEmpty(Model.ArtifactUrl))
+                                            {
+                                                <a href="@Model.ArtifactUrl" target="_blank" class="margin-l-10">@T("Plugins.Shipping.Manager.Orders.Shipments.Label.View")</a>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                            @if (@Model.ShippingRateComputationMethodSystemName == ShippingManagerDefaults.SendCloudSystemName)
+                            {
+                                <div class="col-md-6">
+                                    <div class="form-group row">
+                                        <div class="col-md-3">
+                                            <nop-label asp-for="ShipmentId" />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="input-group input-group-short float-left">
+                                                <nop-editor asp-for="ShipmentId" />
+                                                <span class="input-group-btn">
+                                                    <button type="submit" name="refundorcancelshipment" class="btn btn-info">
+                                                        @T("Plugins.Shipping.Manager.Orders.Shipments.Cancel.Button")
+                                                    </button>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-md-3">
+                                <nop-label asp-for="ShippingMethodId" />
+                            </div>
+                            <div class="col-md-7">
+                                <div class="input-group input-group-short float-left">
+                                    <nop-select asp-for="ShippingMethodId" asp-items="Model.AvailableShippingMethods" onchange="updateShippingMethod(this)" />
+                                    <span class="input-group-btn">
+                                        <button type="submit" name="setshippingmethod" class="btn btn-info">
+                                            @T("Plugins.Shipping.Manager.Orders.Shipments.ShippingMethod.Button")
+                                        </button>
+                                    </span>
+                                    <input asp-for="ShippingMethodName" type="hidden" />
+                                    <nop-editor asp-for="ShippingRateComputationMethodSystemName" style="display:none" />
+                                </div>
+                                <script>
+                                    function updateShippingMethod(element) {
+                                        var text = element.options[element.selectedIndex].text;
+                                        $("#ShippingMethodName").val(text);
+                                    }
+                                </script>
+                            </div>
+                        </div>
+                        @if (shippingManagerSettings.UsePackagingSystem)
+                        {
+                            <div class="form-group row">
+                                <div class="col-md-3">
+                                    <nop-label asp-for="PackagingOptionId" />
+                                </div>
+                                <div class="col-md-5">
+                                    <div class="input-group input-group-short float-left">
+                                        <nop-select asp-for="PackagingOptionId" asp-items="Model.AvailablePackagingOptions" onchange="updatePackagingOption(this)" />
+                                        <span class="input-group-btn">
+                                            <button type="submit" name="setpackagingoption" class="btn btn-info">
+                                                @T("Plugins.Shipping.Manager.Orders.Shipments.PackagingOption.Button")
+                                            </button>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        <div class="form-group row">
+                            <div class="col-md-3">
+                                <nop-label asp-for="ScheduledShipDate" />
+                            </div>
+                            <div class="col-md-4">
+                                <div class="input-group">
+                                    <nop-editor asp-for="ScheduledShipDate" />
+                                    <span class="input-group-btn">
+                                        <button type="submit" name="setscheduledshipdate" class="btn btn-info">
+                                            @T("Plugins.Shipping.Manager.Shipments.ScheduledShipDate.Button")
+                                        </button>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-md-3">
+                                <nop-label asp-for="AdminComment" />
+                            </div>
+                            <div class="col-md-9">
+                                <div class="input-group">
+                                    <nop-editor asp-for="AdminComment" />
+                                    <span class="input-group-btn">
+                                        <button type="submit" name="setadmincomment" class="btn btn-info">
+                                            @T("Admin.Orders.Shipments.AdminComment.Button")
+                                        </button>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group row">
+                                    <div class="col-md-6">
+                                        <nop-label asp-for="TotalWeight" />
+                                    </div>
+                                    <div class="col-md-5">
+                                        <div class="form-text-row">@Model.TotalWeight</div>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-md-6">
+                                        <nop-label asp-for="ShippedDate" />
+                                    </div>
+                                    <div class="col-md-5">
+                                        <div class="input-group input-group-short">
+                                            <div id="lblShippedDate" class="input-group-text">
+                                                <div class="form-text-row">@Model.ShippedDate</div>
+                                            </div>
+                                            @if (Model.ShippedDateUtc.HasValue)
+                                            {
+                                                <div id="divShippedDate" style="display: inline-block;">
+                                                    <nop-editor asp-for="ShippedDateUtc" />
+                                                    @T("Admin.Orders.Shipments.ShippedDate.EnterUtc")&nbsp;&nbsp;
+                                                </div>
+                                            }
+                                            <div class="input-group-btn">
+                                                @if (Model.CanShip)
+                                                {
+                                                    <button type="submit" name="setasshipped" id="setasshipped" class="btn btn-info btn-flat">
+                                                        @T("Admin.Orders.Shipments.ShippedDate.Button")
+                                                    </button>
+                                                }
+                                                @if (Model.ShippedDateUtc.HasValue)
+                                                {
+                                                    <button type="submit" onclick="toggleShippedDate(true);return false;" id="btnEditShippedDate" class="btn btn-primary">
+                                                        @T("Admin.Common.Edit")
+                                                    </button>
+
+                                                    <button type="submit" id="btnSaveShippedDate" name="saveshippeddate" class="btn btn-primary">
+                                                        @T("Admin.Common.Save")
+                                                    </button>
+                                                    <nop-action-confirmation asp-button-id="btnSaveShippedDate" />
+
+                                                    <button type="submit" onclick="toggleShippedDate(false);return false;" id="btnCancelShippedDate" class="btn bg-teal">
+                                                        @T("Admin.Common.Cancel")
+                                                    </button>
+                                                    <button type="submit" id="btnClearShippedDate" name="clearshippeddate" class="btn btn-primary">
+                                                        @T("Admin.Common.Clear")
+                                                    </button>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group row">
+                                    <div class="col-sm-4">
+                                        <nop-label asp-for="PackageDimensions" />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-text-row">@Model.PackageDimensions</div>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-sm-4">
+                                        <nop-label asp-for="DeliveryDate" />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="input-group input-group-short">
+                                            <div id="lblDeliveryDate" class="input-group-text">
+                                                <div class="form-text-row">@Model.DeliveryDate</div>
+                                            </div>
+                                            @if (Model.DeliveryDateUtc.HasValue)
+                                            {
+                                                <div id="divDeliveryDate" style="display: inline-block;">
+                                                    <nop-editor asp-for="DeliveryDateUtc" />
+                                                    @T("Admin.Orders.Shipments.DeliveryDate.EnterUtc")&nbsp;&nbsp;
+                                                </div>
+                                            }
+                                            <div class="input-group-btn">
+                                                @if (Model.CanDeliver)
+                                                {
+                                                    <button type="submit" name="setasdelivered" id="setasdelivered" class="btn btn-info btn-flat">
+                                                        @T("Admin.Orders.Shipments.DeliveryDate.Button")
+                                                    </button>
+                                                }
+                                                @if (Model.DeliveryDateUtc.HasValue)
+                                                {
+
+                                                    <button type="submit" onclick="toggleDeliveryDate(true);return false;" id="btnEditDeliveryDate" class="btn btn-primary">
+                                                        @T("Admin.Common.Edit")
+                                                    </button>
+
+                                                    <button type="submit" id="btnSaveDeliveryDate" name="savedeliverydate" class="btn btn-primary">
+                                                        @T("Admin.Common.Save")
+                                                    </button>
+                                                    <nop-action-confirmation asp-button-id="btnSaveDeliveryDate" />
+
+                                                    <button type="submit" onclick="toggleDeliveryDate(false);return false;" id="btnCancelDeliveryDate" class="btn bg-teal">
+                                                        @T("Admin.Common.Cancel")
+                                                    </button>
+
+                                                    <button type="submit" id="btnClearShippedDate" name="cleardeliverydate" class="btn btn-primary">
+                                                        @T("Admin.Common.Clear")
+                                                    </button>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card card-default">
+                            <div class="card-header">
+                                @T("Admin.Orders.Shipments.Products")
+                            </div>
+                            <div class="card-body">
+                                <table class="table table-hover table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>
+                                                @T("Admin.Orders.Shipments.Products.ProductName")
+                                            </th>
+                                            <th class="text-center">
+                                                @T("Admin.Orders.Shipments.Products.SKU")
+                                            </th>
+                                            <th class="text-center">
+                                                @T("Admin.Orders.Shipments.Products.Warehouse")
+                                            </th>
+                                            <th class="text-center">
+                                                @T("Admin.Orders.Shipments.Products.ItemWeight")
+                                            </th>
+                                            <th class="text-center">
+                                                @T("Admin.Orders.Shipments.Products.ItemDimensions")
+                                            </th>
+                                            <th class="text-center">
+                                                @T("Admin.Orders.Shipments.Products.QtyShipped")
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var item in Model.Items)
+                                        {
+                                            <tr>
+                                                <td style="width: 30%;" class="text-left">
+                                                    <div>
+                                                        <em><a asp-controller="Product" asp-action="Edit" asp-route-id="@item.ProductId">@item.ProductName</a></em>
+                                                        @if (!string.IsNullOrEmpty(item.AttributeInfo))
+                                                        {
+                                                            <p>
+                                                                @Html.Raw(item.AttributeInfo)
+                                                            </p>
+                                                        }
+                                                        @if (!string.IsNullOrEmpty(item.RentalInfo))
+                                                        {
+                                                            <p>
+                                                                @Html.Raw(item.RentalInfo)
+                                                            </p>
+                                                        }
+                                                    </div>
+                                                </td>
+                                                <td style="width: 15%;" class="text-center">
+                                                    <div>
+                                                        @item.Sku
+                                                    </div>
+                                                </td>
+                                                <td style="width: 15%;" class="text-center">
+                                                    <div>
+                                                        @item.ShippedFromWarehouse
+                                                    </div>
+                                                </td>
+                                                <td style="width: 10%;" class="text-center">
+                                                    @item.ItemWeight
+                                                </td>
+                                                <td style="width: 15%;" class="text-center">
+                                                    @item.ItemDimensions
+                                                </td>
+                                                <td style="width: 10%;" class="text-center">
+                                                    @item.QuantityInThisShipment
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        @if (Model.ShipmentStatusEvents.Count > 0)
+                        {
+                            <div class="card card-default">
+                                <div class="card-header">
+                                    @T("Admin.Orders.Shipments.ShipmentStatusEvents")
+                                </div>
+                                <div class="card-body">
+                                    <table class="table table-hover table-bordered text-center">
+                                        <thead>
+                                            <tr>
+                                                <th>
+                                                    @T("Admin.Orders.Shipments.ShipmentStatusEvents.Event")
+                                                </th>
+                                                <th>
+                                                    @T("Admin.Orders.Shipments.ShipmentStatusEvents.Location")
+                                                </th>
+                                                <th>
+                                                    @T("Admin.Orders.Shipments.ShipmentStatusEvents.Country")
+                                                </th>
+                                                <th>
+                                                    @T("Admin.Orders.Shipments.ShipmentStatusEvents.Date")
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var item in Model.ShipmentStatusEvents)
+                                            {
+                                                <tr>
+                                                    <td style="width:40%;">
+                                                        <div>
+                                                            @item.EventName
+                                                        </div>
+                                                    </td>
+                                                    <td style="width:20%;">
+                                                        <div>
+                                                            @item.Location
+                                                        </div>
+                                                    </td>
+                                                    <td style="width:20%;">
+                                                        <div>
+                                                            @item.Country
+                                                        </div>
+                                                    </td>
+                                                    <td style="width:20%;">
+                                                        <div>
+                                                            @if (item.Date.HasValue)
+                                                            {
+                                                                @item.Date.Value.ToString("D")
+                                                            }
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+<nop-delete-confirmation asp-model-id="@Model.Id" asp-button-id="shipment-delete" asp-action="DeleteShipment" />

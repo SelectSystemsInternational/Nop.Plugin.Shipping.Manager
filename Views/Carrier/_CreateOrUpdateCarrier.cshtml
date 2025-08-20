@@ -1,0 +1,55 @@
+@model CarrierModel
+
+<div asp-validation-summary="All"></div>
+<input asp-for="Id" type="hidden" />
+
+<div class="content">
+    <div class="form-horizontal">
+        @await Component.InvokeAsync("VendorScopeConfiguration")
+        <div class="cards-group">
+            @await Component.InvokeAsync("AdminWidget", new { widgetZone = ShippingManagerWidgetZones.CarrierDetailsTop, additionalData = Model })
+            <div class="card card-default">
+                <div class="card-body">
+                    <div class="form-group row">
+                        <div class="col-md-3">
+                            <nop-label asp-for="Name" />
+                        </div>
+                        <div class="col-md-6">
+                            <nop-editor asp-for="Name" asp-required="true" />
+                            <span asp-validation-for="Name"></span>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-md-3">
+                            <nop-label asp-for="Active" />
+                        </div>
+                        <div class="col-md-9">
+                            <nop-editor asp-for="Active" />
+                            <span asp-validation-for="Active"></span>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-sm-3">
+                            <nop-label asp-for="ShippingRateComputationMethodSystemName" />
+                        </div>
+                        <div class="col-sm-6">
+                            <nop-select asp-for="ShippingRateComputationMethodSystemName" asp-items="Model.ActiveShippingRateComputationMethodSystemNames" />
+                            <span asp-validation-for="ShippingRateComputationMethodSystemName"></span>
+                        </div>
+                    </div>
+                    <nop-editor asp-for="Address" asp-template="Address" />
+                    <div class="form-group row">
+                        <div class="col-md-3">
+                            <nop-label asp-for="AdminComment" />
+                        </div>
+                        <div class="col-md-6">
+                            <nop-textarea asp-for="AdminComment" />
+                            <span asp-validation-for="AdminComment"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @await Component.InvokeAsync("AdminWidget", new { widgetZone = ShippingManagerWidgetZones.CarrierDetailsBottom, additionalData = Model })
+        </div>
+    </div>
+</div>

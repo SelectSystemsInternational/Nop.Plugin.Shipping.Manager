@@ -1,0 +1,66 @@
+@model Nop.Web.Areas.Admin.Models.Settings.ShippingSettingsModel
+
+    <div class="card-body">
+        <div class="form-group row">
+            <div class="col-md-3">
+                <nop-override-store-checkbox asp-for="FreeShippingOverXEnabled_OverrideForStore" asp-input="FreeShippingOverXEnabled" asp-store-scope="@Model.ActiveStoreScopeConfiguration" />
+                <nop-label asp-for="FreeShippingOverXEnabled" />
+            </div>
+            <div class="col-md-9">
+                <nop-editor asp-for="FreeShippingOverXEnabled" />
+                <span asp-validation-for="FreeShippingOverXEnabled"></span>
+            </div>
+        </div>
+        <nop-nested-setting asp-for="FreeShippingOverXEnabled">
+            <div class="form-group row">
+                <div class="col-md-3">
+                    <nop-override-store-checkbox asp-for="FreeShippingOverXValue_OverrideForStore" asp-input="FreeShippingOverXValue" asp-store-scope="@Model.ActiveStoreScopeConfiguration" />
+                    <nop-label asp-for="FreeShippingOverXValue" />
+                </div>
+                <div class="col-md-9">
+                    <nop-editor asp-for="FreeShippingOverXValue" asp-postfix="@Model.PrimaryStoreCurrencyCode" />
+                    <span asp-validation-for="FreeShippingOverXValue"></span>
+                </div>
+            </div>
+            <div class="form-group row advanced-setting">
+                <div class="col-md-3">
+                    <nop-override-store-checkbox asp-for="FreeShippingOverXIncludingTax_OverrideForStore" asp-input="FreeShippingOverXIncludingTax" asp-store-scope="@Model.ActiveStoreScopeConfiguration" />
+                    <nop-label asp-for="FreeShippingOverXIncludingTax" />
+                </div>
+                <div class="col-md-9">
+                    <nop-editor asp-for="FreeShippingOverXIncludingTax" />
+                    <span asp-validation-for="FreeShippingOverXIncludingTax"></span>
+                </div>
+            </div>
+        </nop-nested-setting>
+        <div class="form-group row advanced-setting">
+            <div class="col-md-3">
+                <nop-override-store-checkbox asp-for="UseWarehouseLocation_OverrideForStore" asp-input="UseWarehouseLocation" asp-store-scope="@Model.ActiveStoreScopeConfiguration" />
+                <nop-label asp-for="UseWarehouseLocation" />
+            </div>
+            <div class="col-md-9">
+                <nop-editor asp-for="UseWarehouseLocation" />
+                <span asp-validation-for="UseWarehouseLocation"></span>
+            </div>
+        </div>
+        <div class="form-group row advanced-setting">
+            <div class="col-md-3">
+                <nop-override-store-checkbox asp-for="ConsiderAssociatedProductsDimensions_OverrideForStore" asp-input="ConsiderAssociatedProductsDimensions" asp-store-scope="@Model.ActiveStoreScopeConfiguration" />
+                <nop-label asp-for="ConsiderAssociatedProductsDimensions" />
+            </div>
+            <div class="col-md-9">
+                <nop-editor asp-for="ConsiderAssociatedProductsDimensions" />
+                <span asp-validation-for="ConsiderAssociatedProductsDimensions"></span>
+            </div>
+        </div>
+        <div class="form-group row advanced-setting">
+            <div class="col-md-3">
+                <nop-override-store-checkbox asp-for="ShippingSorting_OverrideForStore" asp-input="ShippingSorting" asp-store-scope="@Model.ActiveStoreScopeConfiguration" />
+                <nop-label asp-for="ShippingSorting" />
+            </div>
+            <div class="col-md-9">
+                <nop-select asp-for="ShippingSorting" asp-items="Model.SortShippingValues" />
+                <span asp-validation-for="ShippingSorting"></span>
+            </div>
+        </div>
+    </div>

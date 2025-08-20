@@ -1,0 +1,39 @@
+@model CarrierModel
+
+@{
+    Layout = "_AdminLayout";
+
+    //page title
+    ViewBag.Title = T("Plugins.Shipping.Manager.Carriers.EditCarrierDetails").Text;
+    //active menu item (system name)
+    NopHtml.SetActiveMenuItemSystemName("Nop.Plugins.Shipping.Manager.Carriers");
+}
+
+<form asp-controller="Carriers" asp-action="EditCarrier" method="post">
+    <div class="content-header clearfix">
+        <h1 class="float-left">
+            @T("Plugins.Shipping.Manager.Carriers.EditCarrierDetails") - @Model.Name
+            <small>
+                <i class="fas fa-arrow-circle-left"></i>
+                <a asp-action="Carriers">@T("Plugins.Shipping.Manager.Carriers.BackToList")</a>
+            </small>
+        </h1>
+        <div class="float-right">
+            <button type="submit" name="save" class="btn btn-primary">
+                <i class="far fa-save"></i>
+                @T("Admin.Common.Save")
+            </button>
+            <button type="submit" name="save-continue" class="btn btn-primary">
+                <i class="far fa-save"></i>
+                @T("Admin.Common.SaveContinue")
+            </button>
+            <span id="carrier-delete" class="btn bg-red">
+                <i class="far fa-trash-alt"></i>
+                @T("Admin.Common.Delete")
+            </span>
+            @await Component.InvokeAsync("AdminWidget", new { widgetZone = ShippingManagerWidgetZones.CarrierDetailsButtons, additionalData = Model })
+        </div>
+    </div>
+    @await Html.PartialAsync("~/Plugins/SSI.Shipping.Manager/Views/Carrier/_CreateOrUpdateCarrier.cshtml", Model)
+</form>
+<nop-delete-confirmation asp-model-id="@Model.Id" asp-button-id="carrier-delete" asp-action="DeleteCarrier" />

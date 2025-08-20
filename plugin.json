@@ -1,0 +1,11 @@
+﻿{
+  "Group": "Shipping rate computation",
+  "FriendlyName": "Shipping Manager",
+  "SystemName": "Shipping.Manager",
+  "Version": "4.70.5.8",
+  "SupportedVersions": [ "4.70" ],
+  "Author": "Select Systems International - www.SelectSystems.com.au",
+  "DisplayOrder": 1,
+  "FileName": "Nop.Plugin.Shipping.Manager.dll",
+  "Description": "This plugin is for vendor shipping management"
+}

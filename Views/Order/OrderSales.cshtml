@@ -1,0 +1,544 @@
+﻿@model Nop.Plugin.Shipping.Manager.Models.Order.OrderSalesSearchModel
+
+@using Nop.Core.Domain.Common;
+@using Nop.Web.Framework.Models.DataTables;
+@using Nop.Plugin.Shipping.Manager.Services;
+
+@inject Nop.Services.Catalog.IProductService _productService
+@inject AdminAreaSettings adminAreaSettings
+@inject IOrderSalesService orderSalesService;
+@inject ShippingManagerSettings shippingManagerSettings;
+
+@{
+    Layout = "_AdminLayout";
+
+    var defaultGridPageSize = adminAreaSettings.DefaultGridPageSize;
+    var gridPageSizes = adminAreaSettings.GridPageSizes;
+    //active menu item (system name)
+    NopHtml.SetActiveMenuItemSystemName("Nop.Plugins.Shipping.Manager.Sales");
+
+    //Global script variables
+    string momentToYearFormat = "YYYY-MM-DD";
+    string momentToShortFormat = await orderSalesService.GetLocalisedShortDateFormatAsync();
+    string kendoToStringFormat = await orderSalesService.GetLocalisedDisplayShortDateFormatAsync();
+
+    var NameSearchInUse = string.Empty;
+}
+
+<script src="~/Plugins/SSI.Shipping.Manager/Scripts/moment.min.js"></script>
+
+<style>
+    thead.k-grid-header tr th:nth-child(2) {
+        min-width: 250px !important;
+    }
+</style>
+
+<form asp-controller="OrderSales" asp-action="OrderSales" method="post">
+    <div class="content-header clearfix">
+        <h1 class="float-left">
+            @T("Plugins.Shipping.Manager.Sales")
+        </h1>
+        <div class="float-right">
+            <div class="btn-group">
+                <button type="button" class="btn btn-info">
+                    <i class="far fa-file-pdf"></i>
+                    @T("Admin.Orders.PdfInvoices")
+                </button>
+                <button type="button" class="btn btn-info dropdown-toggle dropdown-icon" data-toggle="dropdown" aria-expanded="false">
+                    <span class="sr-only">&nbsp;</span>
+                </button>
+                <ul class="dropdown-menu" role="menu">
+                    <li class="dropdown-item">
+                        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#confirmPrintAllInvoices">
+                            @T("Admin.Orders.PdfInvoices.All")
+                        </button>
+                    </li>
+                    <li class="dropdown-item">
+                        <button type="button" id="pdf-invoice-selected">
+                            @T("Admin.Orders.PdfInvoices.Selected")
+                        </button>
+                    </li>
+                </ul>
+            </div>
+            <div id="confirmPrintAllInvoices" class="modal fade" role="dialog">
+                <div class="modal-dialog">
+                    <!-- Modal content-->
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h4 class="modal-title">Are you sure?</h4>
+                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        </div>
+                        <div class="modal-body">
+                            <p>@T("Plugins.Shipping.Manager.Confirm.PrintAllInvoices")</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">No, Cancel</button>
+                            <button type="submit" name="pdf-report-all-invoices">Yes</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="btn-group">
+                <button type="button" class="btn bg-purple">
+                    <i class="far fa-file-pdf"></i>
+                    @T("Plugins.Shipping.Manager.Admin.PdfReport")
+                </button>
+                <button type="button" class="btn bg-purple dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                    <span class="caret"></span>
+                    <span class="sr-only">&nbsp;</span>
+                </button>
+                <ul class="dropdown-menu" role="menu">
+                    <li>
+                        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#confirmPrintAllSales">
+                            @T("Plugins.Shipping.Manager.Admin.PdfReport.All")
+                        </button>
+                    </li>
+                    <li>
+                        <button type="button" id="pdf-report-selected-sales">
+                            @T("Plugins.Shipping.Manager.Admin.PdfReport.Selected")
+                        </button>
+                    </li>
+                </ul>
+            </div>
+            <div id="confirmPrintAllSales" class="modal fade" role="dialog">
+                <div class="modal-dialog">
+                    <!-- Modal content-->
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h4 class="modal-title">Are you sure?</h4>
+                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        </div>
+                        <div class="modal-body">
+                            <p>@T("Plugins.Shipping.Manager.Confirm.PrintAllSales")</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">No, Cancel</button>
+                            <button type="submit" name="pdf-report-all-sales">Yes</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="btn-group">
+                <button type="button" class="btn btn-success">
+                    <i class="fas fa-download"></i>
+                    @T("Admin.Common.Export")
+                </button>
+                <button type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                    <span class="caret"></span>
+                    <span class="sr-only">&nbsp;</span>
+                </button>
+                <ul class="dropdown-menu" role="menu">
+                    <li>
+                        <button type="submit" name="exportexcel-all-sales">
+                            <i class="fas fa-file-excel-o"></i>
+                            @T("Admin.Common.ExportToExcel.All")
+                        </button>
+                    </li>
+                    <li>
+                        <button type="button" id="exportexcel-selected-sales">
+                            <i class="fa fa-file-excel-o"></i>
+                            @T("Admin.Common.ExportToExcel.Selected")
+                        </button>
+                    </li>
+                </ul>
+            </div>
+            @if (shippingManagerSettings.DisplayManualOperations)
+            {
+                <div class="btn-group">
+                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#myMarkAsPaidModal">
+                        @T("Plugins.Shipping.Manager.Sales.SetOrdersAsPaid")
+                    </button>
+                </div>
+			}
+			@if (shippingManagerSettings.TestMode)
+			{
+                <div class="btn-group">
+                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#myMarkAsApprovedModal">
+                        @T("Plugins.Shipping.Manager.Sales.SetOrdersAsApproved")
+                    </button>
+                </div>
+            }
+        </div>
+    </div>
+    <div class="content">
+        <div class="form-horizontal">
+            @await Component.InvokeAsync("VendorScopeConfiguration")
+            <div class="cards-group">
+                <div class="card card-default card-search">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group row" style="display:@NameSearchInUse">
+                                    <div class="col-md-4">
+                                        <nop-label asp-for="SearchProductName" />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <nop-editor asp-for="SearchProductName" value="@Model.SearchProductName" />
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-md-4">
+                                        <nop-label asp-for="FromDate" />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <nop-editor asp-for="FromDate" />
+                                        <input type="hidden" name="@Model.FDate" id="FDate" />
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-md-4">
+                                        <nop-label asp-for="ToDate" />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <nop-editor asp-for="ToDate" />
+                                        <input type="hidden" name="@Model.TDate" id="TDate" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group row">
+                                    <div class="col-md-4">
+                                        <nop-label asp-for="PaymentMethod" />
+                                    </div>
+                                    <div class="col-md-4">
+                                        <nop-select asp-for="PaymentMethod" asp-items="@Model.AvailablePaymentMethods" />
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-md-4">
+                                        <nop-label asp-for="OrderbyName" />
+                                    </div>
+                                    <div class="col-md-8">
+                                        <nop-editor asp-for="OrderbyName" />
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-md-4">
+                                        <nop-label asp-for="Ispay" />
+                                    </div>
+                                    <div class="col-md-8">
+                                        <nop-editor asp-for="Ispay" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="text-center col-12">
+                                <button type="button" id="Search-OrderSales" class="btn btn-primary btn-search">
+                                    <i class="fas fa-search"></i>
+                                    @T("Admin.Common.Search")
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card card-default">
+                    <div class="card-body">
+                        @await Html.PartialAsync("Table", new DataTablesModel
+                        {
+                            Name = "OrderSales-Grid",
+                            UrlRead = new DataUrl("OrderSalesList", "OrderSales", null),
+                            UrlDelete = new DataUrl("OrderSalesListDelete", "OrderSales", null),
+                            SearchButtonId = "Search-OrderSales",
+                            PrimaryKeyColumn = nameof(OrderSalesModel.Id),
+                            Length = Model.PageSize,
+                            LengthMenu = Model.AvailablePageSizes,
+                            Filters = new List<FilterParameter>
+                            {
+                                new FilterParameter(nameof(Model.SearchProductName)),
+                                new FilterParameter(nameof(Model.FromDate)),
+                                new FilterParameter(nameof(Model.FDate)),
+                                new FilterParameter(nameof(Model.ToDate)),
+                                new FilterParameter(nameof(Model.TDate)),
+                                new FilterParameter(nameof(Model.PaymentMethod)),
+                                new FilterParameter(nameof(Model.OrderbyName), typeof(bool)),
+                                new FilterParameter(nameof(Model.Ispay), typeof(bool)),
+                            },
+                            ColumnCollection = new List<ColumnProperty>
+                            {
+                                new ColumnProperty(null)
+                                {
+                                    Render = new RenderChildCaret(),
+                                    Width = "5",
+                                    Searchable = false,
+                                    ClassName =  NopColumnClassDefaults.ChildControl,
+                                },
+                                new ColumnProperty(nameof(OrderSalesModel.Id))
+                                {
+                                    IsMasterCheckBox = true,
+                                    Render = new RenderCheckBox("checkbox_Accproducts"),
+                                    ClassName =  NopColumnClassDefaults.CenterAll,
+                                    Width = "30",
+                                },
+                                new ColumnProperty(nameof(OrderSalesModel.Id))
+                                {
+                                    Title = T("Plugins.Shipping.Manager.Sales.Values.Fields.OrderId").Text,
+                                    ClassName =  NopColumnClassDefaults.CenterAll,
+                                    Width = "40",
+                                    Render = new RenderLink(new DataUrl("~/Admin/Order/Edit/", nameof(OrderSalesModel.Id)))
+                                },
+                                new ColumnProperty(nameof(OrderSalesModel.CustomerEmail))
+                                {
+                                    Title = T("Plugins.Shipping.Manager.Sales.Values.Fields.CustomerEmail").Text,
+                                    Width = "200"
+                                },
+                                new ColumnProperty(nameof(OrderSalesModel.TotalPrice))
+                                {
+                                    Title = T("Plugins.Shipping.Manager.Sales.Values.Fields.TotalPrice").Text,
+                                    Width = "60"
+                                },
+                                new ColumnProperty(nameof(OrderSalesModel.PaymentStatus))
+                                {
+                                    Title = T("Plugins.Shipping.Manager.Sales.Values.Fields.PaymentStatus").Text,
+                                    ClassName =  NopColumnClassDefaults.CenterAll,
+                                    Width = "50"
+                                },
+                                new ColumnProperty(nameof(OrderSalesModel.PaymentDate))
+                                {
+                                    Title = T("Plugins.Shipping.Manager.Sales.Values.Fields.PaymentDate").Text,
+                                    Width = "75"
+                                },
+                                new ColumnProperty(nameof(OrderSalesModel.PaymentMethodSystemName))
+                                {
+                                    Title = T("Plugins.Shipping.Manager.Sales.Values.Fields.PaymentMethod").Text,
+                                    Width = "150"
+                                },
+                                new ColumnProperty(nameof(OrderSalesModel.Status))
+                                {
+                                    Title = T("Plugins.Shipping.Manager.Sales.Values.Fields.Status").Text,
+                                    Width = "100",
+                                },
+                                new ColumnProperty(nameof(OrderSalesModel.Id))
+                                {
+                                    Title = T("Plugins.Shipping.Manager.Delivery.Shipment").Text,
+                                    Width = "50",
+                                    ClassName =  NopColumnClassDefaults.Button,
+                                    Render = new RenderCustom("renderShipmentUrl")
+                                },
+                                new ColumnProperty(nameof(OrderSalesModel.DisplayUrl))
+                                {
+                                    Title = T("Admin.Common.View").Text,
+                                    Width = "60",
+                                    ClassName =  NopColumnClassDefaults.Button,
+                                    Render = new RenderCustom("renderColumnDisplay")
+                                }
+                            },
+                            ChildTable = new DataTablesModel
+                            {
+                                Name = "OrderSales-Grid",
+                                UrlRead = new DataUrl("OrderItemsByOrderId", "OrderSales", null),
+                                IsChildTable = true,
+                                Paging = false,
+                                Length = Model.PageSize,
+                                LengthMenu = Model.AvailablePageSizes,
+                                Filters = new List<FilterParameter>
+                                {
+                                    new FilterParameter(nameof(OrderItemSearchModel.OrderId), nameof(OrderSalesModel.Id), true)
+                                },
+                                ColumnCollection = new List<ColumnProperty>
+                                {
+                                    new ColumnProperty(nameof(OrderItemModel.ProductName))
+                                    {
+                                        Title = T("Admin.Orders.Shipments.Products.ProductName").Text,
+                                        Width = "200"
+                                    },
+                                    new ColumnProperty(nameof(OrderItemModel.Quantity))
+                                    {
+                                        Title = T("Plugins.Shipping.Manager.Sales.Values.Fields.Quantity").Text,
+                                        ClassName =  NopColumnClassDefaults.CenterAll,
+                                        Width = "50"
+                                    },
+                                    new ColumnProperty(nameof(OrderItemModel.Price))
+                                    {
+                                        Title = T("Plugins.Shipping.Manager.Sales.Values.Fields.Price").Text,
+                                        ClassName =  NopColumnClassDefaults.CenterAll,
+                                        Width = "50"
+                                    },
+                                    new ColumnProperty(nameof(OrderItemModel.AttributeInfo))
+                                    {
+                                        Title = T("Plugins.Shipping.Manager.Sales.Values.Fields.AttributeDescription").Text,
+                                        Width = "300",
+                                        Encode = false
+                                    },
+                                    new ColumnProperty(nameof(OrderItemModel.Warehouse))
+                                    {
+                                        Title = T("Plugins.Shipping.Manager.Sales.Values.Fields.Warehouse").Text,
+                                        Width = "150",
+                                        Encode = false
+                                    }
+                                }
+                            }
+                    })
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        function renderColumnDisplay(data, type, row, meta) {
+            if (row.DisplayUrl && row.DisplayUrl.length > 0) {
+                return '<a target="_blank" class="btn btn-default" href="' + row.DisplayUrl + '"><i class="fa fa-cog"></i>@T("Admin.Common.View")</a>';
+            } else {
+                return '';
+            }
+        }
+        function renderShipmentUrl(data, type, row, meta) {
+            if (row.ShipmentUrl && row.ShipmentUrl.length > 0) {
+                    return '<button onclick=\"javascript:OpenWindow(\'@Url.RouteUrl("Nop.Plugins.Shipping.Manager.AddShipmentPopup")?Id='
+                        + data + '&btnId=btnRefreshOrderSales\', 700, 650, true); return false;\" class="btn btn-default"><i class="fa fa-pencil"></i>@T("Plugins.Shipping.Manager.Sales.AddShipment")</button>';
+            } else {
+                return '';
+            }
+        }
+        $(document).ready(function () {
+            $('#btnRefreshOrderSales').click(function () {
+                //refresh grid
+                updateTable('#OrderSales-Grid');
+
+                //return false to don't reload a page
+                return false;
+            });
+        });
+    </script>
+</form>
+
+<form asp-controller="OrderSales" asp-action="ExportSalesExcelSelected" method="post" id="export-sales-excel-selected-form">
+    <input type="hidden" id="selectedIds" name="selectedIds" value="" />
+    <input type="submit" id="btnRefreshOrderSales" style="display: none" />
+</form>
+
+<script>
+    $(document).ready(function () {
+        $('#exportexcel-selected-sales').click(function (e) {
+            e.preventDefault();
+            var ids = selectedIds.join(",");
+            $('#export-sales-excel-selected-form #selectedIds').val(ids);
+            $('#export-sales-excel-selected-form').submit();
+            return false;
+        });
+    });
+</script>
+
+<form asp-controller="OrderSales" asp-action="PdfSalesReportSelected" method="post" id="pdf-report-selected-sales-form">
+    <input type="hidden" id="selectedIds" name="selectedIds" value="" />
+</form>
+
+<form asp-controller="OrderSales" asp-action="ExportSalesExcelSelected" method="post" id="export-sales-excel-selected-form">
+    <input type="hidden" id="selectedIds" name="selectedIds" value="" />
+    <input type="submit" id="btnRefreshOrderSales" style="display: none" />
+</form>
+
+<form asp-controller="OrderSales" asp-action="MarkOrderAsPaid" method="post" id="MarkOrderAsPaid-selected-form">
+    <input type="hidden" id="selectedIds" name="selectedIds" value="" />
+</form>
+
+<form asp-controller="OrderSales" asp-action="MarkOrderAsApproved" method="post" id="MarkOrderAsApproved-selected-form">
+    <input type="hidden" id="selectedIds" name="selectedIds" value="" />
+</form>
+
+<script>
+    $(document).ready(function () {
+        $('#pdf-invoice-selected').click(function (e) {
+            debugger;
+            e.preventDefault();
+            var ids = selectedIds.join(",");
+            $('#pdf-invoice-selected-form #selectedIds').val(ids);
+            $('#pdf-invoice-selected-form').submit();
+            return false;
+        });
+        $('#pdf-report-selected-sales').click(function (e) {
+            debugger;
+            e.preventDefault();
+            var ids = selectedIds.join(",");
+            $('#pdf-report-selected-sales-form #selectedIds').val(ids);
+            $('#pdf-report-selected-sales-form').submit();
+            return false;
+        });
+        $('#exportexcel-selected-sales').click(function (e) {
+            e.preventDefault();
+            var ids = selectedIds.join(",");
+            $('#export-sales-excel-selected-form #selectedIds').val(ids);
+            $('#export-sales-excel-selected-form').submit();
+            return false;
+        });
+        $('#markorderaspaid').click(function (e) {
+            e.preventDefault();
+            var ids = selectedIds.join(",");
+            $('#MarkOrderAsPaid-selected-form #selectedIds').val(ids);
+            $('#MarkOrderAsPaid-selected-form').submit();
+            return false;
+        });
+
+        $('#markorderasapproved').click(function (e) {
+            e.preventDefault();
+            var ids = selectedIds.join(",");
+            $('#MarkOrderAsApproved-selected-form #selectedIds').val(ids);
+            $('#MarkOrderAsApproved-selected-form').submit();
+            return false;
+        });
+
+    });
+</script>
+
+<div id="myMarkAsPaidModal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Are you sure?</h4>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to perform this action?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">No, Cancel</button>
+                <button type="button" class="btn btn-primary" name="markorderaspaid" id="markorderaspaid">Yes</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div id="myMarkAsApprovedModal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Are you sure?</h4>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to perform this action?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">No, Cancel</button>
+                <button type="button" class="btn btn-primary" name="markorderasapproved" id="markorderasapproved">Yes</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        $("#FromDate").kendoDatePicker({
+            format: "@kendoToStringFormat"
+        });
+        $('#FromDate').change(function () {
+            var eventStartDateTimeUtc = $('#@Html.IdFor(model => model.FromDate)').val();
+            var startDate = moment(eventStartDateTimeUtc, "@momentToShortFormat");
+            var Sdate = startDate.format("@momentToYearFormat")
+            $("#FDate").val(Sdate);
+        });
+        $("#ToDate").kendoDatePicker({
+            format: "@kendoToStringFormat"
+        });
+         $('#ToDate').change(function () {
+            var eventToDateTimeUtc =$('#@Html.IdFor(model => model.ToDate)').val()
+            var endDate = moment(eventToDateTimeUtc, "@momentToShortFormat");
+            var Edate = endDate.format("@momentToYearFormat")
+            $("#TDate").val(Edate);
+        });
+    });
+</script>
